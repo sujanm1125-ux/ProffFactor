@@ -16,14 +16,14 @@ if (process.platform === 'win32') {
       '--',
       'bash',
       '-lc',
-      `cd '${wslPath}' && compact compile +0.31.1 src/prooffactor.compact src/managed/prooffactor`,
+      `cd '${wslPath}' && compact compile +0.31.1 src/aegisbid.compact src/managed/aegisbid`,
     ],
     { stdio: 'inherit' },
   );
 } else {
   execFileSync(
     'compact',
-    ['compile', '+0.31.1', 'src/prooffactor.compact', 'src/managed/prooffactor'],
+    ['compile', '+0.31.1', 'src/aegisbid.compact', 'src/managed/aegisbid'],
     { cwd: contractRoot, stdio: 'inherit' },
   );
 }

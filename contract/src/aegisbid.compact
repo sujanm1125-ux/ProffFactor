@@ -1,0 +1,237 @@
+pragma language_version >= 0.22 && <= 0.23;
+
+import CompactStandardLibrary;
+
+export new type AuctionId = Bytes<32>;
+export new type BidCommitment = Bytes<32>;
+export new type BidNullifier = Bytes<32>;
+export new type UserIdentity = Bytes<32>;
+export new type UserSecret = Bytes<32>;
+
+export enum AuctionState {
+  Open,
+  Closed,
+  Settled,
+  Cancelled
+}
+
+export struct AuctionDetails {
+  seller: UserIdentity;
+  reservePrice: Uint<64>;
+  biddingDeadline: Uint<64>;
+  state: AuctionState;
+  highestCommitment: BidCommitment;
+  highestDisclosedBid: Uint<64>;
+  winnerIdentity: UserIdentity;
+}
+
+export struct BidWitness {
+  auctionId: AuctionId;
+  bidderSecret: UserSecret;
+  amount: Uint<64>;
+  salt: Bytes<32>;
+}
+
+export struct RevealWitness {
+  auctionId: AuctionId;
+  bidderSecret: UserSecret;
+  amount: Uint<64>;
+  salt: Bytes<32>;
+}
+
+witness getCallerSecret(): UserSecret;
+witness getBidWitness(): BidWitness;
+witness getRevealWitness(): RevealWitness;
+
+export ledger admin: UserIdentity;
+export ledger auctions: Map<AuctionId, AuctionDetails>;
+export ledger bidCommitments: Set<BidCommitment>;
+export ledger spentNullifiers: Set<BidNullifier>;
+export ledger totalBidsCount: Uint<64>;
+
+constructor() {
+  admin = disclose(deriveUserIdentity(getCallerSecret()));
+  totalBidsCount = 0;
+}
+
+export pure circuit deriveUserIdentity(secret: UserSecret): UserIdentity {
+  return persistentHash<[Bytes<16>, UserSecret]>([
+    "aegisbid:user:v1",
+    secret
+  ]) as UserIdentity;
+}
+
+export pure circuit deriveBidCommitment(
+  auctionId: AuctionId,
+  bidder: UserIdentity,
+  amount: Uint<64>,
+  salt: Bytes<32>
+): BidCommitment {
+  return persistentHash<[Bytes<21>, AuctionId, UserIdentity, Uint<64>, Bytes<32>]>([
+    "aegisbid:bidcommit:v1",
+    auctionId,
+    bidder,
+    amount,
+    salt
+  ]) as BidCommitment;
+}
+
+export pure circuit deriveBidNullifier(
+  auctionId: AuctionId,
+  secret: UserSecret
+): BidNullifier {
+  return persistentHash<[Bytes<21>, AuctionId, UserSecret]>([
+    "aegisbid:nullifier:v1",
+    auctionId,
+    secret
+  ]) as BidNullifier;
+}
+
+export circuit createAuction(
+  auctionId: AuctionId,
+  reservePrice: Uint<64>,
+  biddingDeadline: Uint<64>
+): [] {
+  const publicAuctionId = disclose(auctionId);
+  const publicReserve = disclose(reservePrice);
+  const publicDeadline = disclose(biddingDeadline);
+  assert(!auctions.member(publicAuctionId), "Auction already exists");
+  assert(publicReserve > 0, "Reserve price must be greater than zero");
+  
+  const sellerSecret = getCallerSecret();
+  const seller = disclose(deriveUserIdentity(sellerSecret));
+  
+  auctions.insert(
+    publicAuctionId,
+    AuctionDetails {
+      seller: seller,
+      reservePrice: publicReserve,
+      biddingDeadline: publicDeadline,
+      state: AuctionState.Open,
+      highestCommitment: default<BidCommitment>,
+      highestDisclosedBid: 0,
+      winnerIdentity: default<UserIdentity>
+    }
+  );
+}
+
+export circuit submitSealedBid(
+  auctionId: AuctionId
+): BidCommitment {
+  const publicAuctionId = disclose(auctionId);
+  assert(auctions.member(publicAuctionId), "Auction does not exist");
+  const auction = auctions.lookup(publicAuctionId);
+  assert(auction.state == AuctionState.Open, "Auction is not open for bidding");
+  
+  const witnessData = getBidWitness();
+  assert(witnessData.auctionId == auctionId, "Bid witness auction ID mismatch");
+  assert(witnessData.amount >= auction.reservePrice, "Bid amount below reserve price");
+  
+  const nullifier = deriveBidNullifier(auctionId, witnessData.bidderSecret);
+  const publicNullifier = disclose(nullifier);
+  assert(!spentNullifiers.member(publicNullifier), "Bidder nullifier already used");
+  spentNullifiers.insert(publicNullifier);
+  
+  const bidderIdentity = deriveUserIdentity(witnessData.bidderSecret);
+  const commitment = deriveBidCommitment(
+    auctionId,
+    bidderIdentity,
+    witnessData.amount,
+    witnessData.salt
+  );
+  
+  const publicCommitment = disclose(commitment);
+  assert(!bidCommitments.member(publicCommitment), "Commitment collision");
+  bidCommitments.insert(publicCommitment);
+  
+  totalBidsCount = (totalBidsCount + 1) as Uint<64>;
+  return publicCommitment;
+}
+
+export circuit closeBidding(
+  auctionId: AuctionId
+): [] {
+  const publicAuctionId = disclose(auctionId);
+  assert(auctions.member(publicAuctionId), "Auction does not exist");
+  const auction = auctions.lookup(publicAuctionId);
+  assert(auction.state == AuctionState.Open, "Auction is not open");
+  
+  const caller = disclose(deriveUserIdentity(getCallerSecret()));
+  assert(caller == auction.seller || caller == admin, "Caller not authorized to close auction");
+  
+  auctions.insert(
+    publicAuctionId,
+    AuctionDetails {
+      seller: auction.seller,
+      reservePrice: auction.reservePrice,
+      biddingDeadline: auction.biddingDeadline,
+      state: AuctionState.Closed,
+      highestCommitment: auction.highestCommitment,
+      highestDisclosedBid: auction.highestDisclosedBid,
+      winnerIdentity: auction.winnerIdentity
+    }
+  );
+}
+
+export circuit revealAndSettle(
+  auctionId: AuctionId
+): [] {
+  const publicAuctionId = disclose(auctionId);
+  assert(auctions.member(publicAuctionId), "Auction does not exist");
+  const auction = auctions.lookup(publicAuctionId);
+  assert(auction.state == AuctionState.Closed, "Auction must be closed to settle");
+  
+  const witnessData = getRevealWitness();
+  assert(witnessData.auctionId == auctionId, "Reveal witness auction mismatch");
+  
+  const bidderIdentity = deriveUserIdentity(witnessData.bidderSecret);
+  const commitment = deriveBidCommitment(
+    auctionId,
+    bidderIdentity,
+    witnessData.amount,
+    witnessData.salt
+  );
+  
+  const publicCommitment = disclose(commitment);
+  assert(bidCommitments.member(publicCommitment), "Commitment not found");
+  assert(witnessData.amount >= auction.reservePrice, "Revealed bid below reserve");
+  assert(witnessData.amount > auction.highestDisclosedBid, "Bid not higher than current highest");
+  
+  auctions.insert(
+    publicAuctionId,
+    AuctionDetails {
+      seller: auction.seller,
+      reservePrice: auction.reservePrice,
+      biddingDeadline: auction.biddingDeadline,
+      state: AuctionState.Settled,
+      highestCommitment: publicCommitment,
+      highestDisclosedBid: disclose(witnessData.amount),
+      winnerIdentity: disclose(bidderIdentity)
+    }
+  );
+}
+
+export circuit cancelAuction(
+  auctionId: AuctionId
+): [] {
+  const publicAuctionId = disclose(auctionId);
+  assert(auctions.member(publicAuctionId), "Auction does not exist");
+  const auction = auctions.lookup(publicAuctionId);
+  assert(auction.state == AuctionState.Open || auction.state == AuctionState.Closed, "Cannot cancel auction in current state");
+  
+  const caller = disclose(deriveUserIdentity(getCallerSecret()));
+  assert(caller == auction.seller || caller == admin, "Only seller or admin can cancel");
+  
+  auctions.insert(
+    publicAuctionId,
+    AuctionDetails {
+      seller: auction.seller,
+      reservePrice: auction.reservePrice,
+      biddingDeadline: auction.biddingDeadline,
+      state: AuctionState.Cancelled,
+      highestCommitment: auction.highestCommitment,
+      highestDisclosedBid: auction.highestDisclosedBid,
+      winnerIdentity: auction.winnerIdentity
+    }
+  );
+}
