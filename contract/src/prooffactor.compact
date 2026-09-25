@@ -1,0 +1,357 @@
+pragma language_version >= 0.22 && <= 0.23;
+
+import CompactStandardLibrary;
+
+export new type RoleSecret = Bytes<32>;
+export new type RoleIdentity = Bytes<32>;
+export new type InvoiceCommitment = Bytes<32>;
+export new type InvoiceNullifier = Bytes<32>;
+export new type SupplierControlKey = Bytes<32>;
+
+export enum InvoiceStatus {
+  Proposed,
+  Accepted,
+  PendingFinancing,
+  FinancedConfirmed,
+  Paid,
+  Rejected,
+  Cancelled
+}
+
+export struct InvoicePrivateData {
+  invoiceReference: Bytes<32>;
+  supplierIdentity: RoleIdentity;
+  buyerIdentity: RoleIdentity;
+  amountMinor: Uint<64>;
+  currencyCode: Uint<16>;
+  dueAt: Uint<64>;
+  salt: Bytes<32>;
+}
+
+export struct FinancingWitness {
+  invoice: InvoicePrivateData;
+  supplierControlSecret: Bytes<32>;
+  buyerNullifierNonce: Bytes<32>;
+}
+
+export struct AcceptanceWitness {
+  invoiceReference: Bytes<32>;
+  buyerNullifierNonce: Bytes<32>;
+}
+
+export struct InvoiceRecord {
+  buyerIdentity: RoleIdentity;
+  supplierControlKey: SupplierControlKey;
+  nullifier: InvoiceNullifier;
+  status: InvoiceStatus;
+  policyId: Uint<32>;
+}
+
+export struct LenderPolicy {
+  lenderIdentity: RoleIdentity;
+  currencyCode: Uint<16>;
+  minimumAmount: Uint<64>;
+  maximumAmount: Uint<64>;
+  latestInvoiceDueAt: Uint<64>;
+  requestDeadline: Uint<64>;
+  active: Boolean;
+}
+
+witness getRoleSecret(): RoleSecret;
+witness getFinancingWitness(): FinancingWitness;
+witness getAcceptanceWitness(): AcceptanceWitness;
+
+export ledger contractAdmin: RoleIdentity;
+export ledger authorizedBuyers: Set<RoleIdentity>;
+export ledger authorizedLenders: Set<RoleIdentity>;
+export ledger invoices: Map<InvoiceCommitment, InvoiceRecord>;
+export ledger policies: Map<Uint<32>, LenderPolicy>;
+export ledger consumedNullifiers: Set<InvoiceNullifier>;
+
+constructor() {
+  contractAdmin = disclose(deriveAdminIdentity(getRoleSecret()));
+}
+
+export pure circuit deriveAdminIdentity(secret: RoleSecret): RoleIdentity {
+  return persistentHash<[Bytes<20>, RoleSecret]>([
+    "prooffactor:admin:v1",
+    secret
+  ]) as RoleIdentity;
+}
+
+export pure circuit deriveBuyerIdentity(secret: RoleSecret): RoleIdentity {
+  return persistentHash<[Bytes<20>, RoleSecret]>([
+    "prooffactor:buyer:v1",
+    secret
+  ]) as RoleIdentity;
+}
+
+export pure circuit deriveLenderIdentity(secret: RoleSecret): RoleIdentity {
+  return persistentHash<[Bytes<21>, RoleSecret]>([
+    "prooffactor:lender:v1",
+    secret
+  ]) as RoleIdentity;
+}
+
+export pure circuit deriveInvoiceCommitment(data: InvoicePrivateData): InvoiceCommitment {
+  return persistentHash<[
+    Bytes<22>,
+    Bytes<32>,
+    RoleIdentity,
+    RoleIdentity,
+    Uint<64>,
+    Uint<16>,
+    Uint<64>,
+    Bytes<32>
+  ]>([
+    "prooffactor:invoice:v1",
+    data.invoiceReference,
+    data.supplierIdentity,
+    data.buyerIdentity,
+    data.amountMinor,
+    data.currencyCode,
+    data.dueAt,
+    data.salt
+  ]) as InvoiceCommitment;
+}
+
+export pure circuit deriveInvoiceNullifier(
+  buyerIdentity: RoleIdentity,
+  invoiceReference: Bytes<32>,
+  nonce: Bytes<32>
+): InvoiceNullifier {
+  return persistentHash<[Bytes<24>, RoleIdentity, Bytes<32>, Bytes<32>]>([
+    "prooffactor:nullifier:v1",
+    buyerIdentity,
+    invoiceReference,
+    nonce
+  ]) as InvoiceNullifier;
+}
+
+export pure circuit deriveSupplierControlKey(
+  commitment: InvoiceCommitment,
+  secret: Bytes<32>
+): SupplierControlKey {
+  return persistentHash<[Bytes<31>, InvoiceCommitment, Bytes<32>]>([
+    "prooffactor:supplier-control:v1",
+    commitment,
+    secret
+  ]) as SupplierControlKey;
+}
+
+export circuit authorizeBuyer(identity: RoleIdentity): [] {
+  requireAdmin();
+  authorizedBuyers.insert(disclose(identity));
+}
+
+export circuit revokeBuyer(identity: RoleIdentity): [] {
+  requireAdmin();
+  authorizedBuyers.remove(disclose(identity));
+}
+
+export circuit authorizeLender(identity: RoleIdentity): [] {
+  requireAdmin();
+  authorizedLenders.insert(disclose(identity));
+}
+
+export circuit revokeLender(identity: RoleIdentity): [] {
+  requireAdmin();
+  authorizedLenders.remove(disclose(identity));
+}
+
+export circuit registerInvoiceCommitment(
+  commitment: InvoiceCommitment,
+  buyerIdentity: RoleIdentity,
+  supplierControlKey: SupplierControlKey
+): [] {
+  const publicCommitment = disclose(commitment);
+  const publicBuyer = disclose(buyerIdentity);
+  assert(!invoices.member(publicCommitment), "Invoice commitment already registered");
+  assert(authorizedBuyers.member(publicBuyer), "Buyer identity is not authorized");
+
+  invoices.insert(publicCommitment, InvoiceRecord {
+    buyerIdentity: publicBuyer,
+    supplierControlKey: disclose(supplierControlKey),
+    nullifier: default<InvoiceNullifier>,
+    status: InvoiceStatus.Proposed,
+    policyId: 0
+  });
+}
+
+export circuit acceptInvoice(
+  commitment: InvoiceCommitment
+): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.status == InvoiceStatus.Proposed, "Invoice is not proposed");
+  const buyerIdentity = deriveBuyerIdentity(getRoleSecret());
+  assert(existing.buyerIdentity == buyerIdentity, "Only the authorized buyer can accept");
+  const acceptance = getAcceptanceWitness();
+  assert(acceptance.invoiceReference != default<Bytes<32>>, "Invoice reference is required");
+  assert(acceptance.buyerNullifierNonce != default<Bytes<32>>, "Buyer nullifier nonce is required");
+  const nullifier = deriveInvoiceNullifier(
+    buyerIdentity,
+    acceptance.invoiceReference,
+    acceptance.buyerNullifierNonce
+  );
+
+  invoices.insert(publicCommitment, disclose(InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: nullifier,
+    status: InvoiceStatus.Accepted,
+    policyId: 0
+  }));
+}
+
+export circuit rejectInvoice(commitment: InvoiceCommitment): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.status == InvoiceStatus.Proposed, "Invoice is not proposed");
+  assert(existing.buyerIdentity == deriveBuyerIdentity(getRoleSecret()), "Only the authorized buyer can reject");
+
+  invoices.insert(publicCommitment, disclose(InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.Rejected,
+    policyId: 0
+  }));
+}
+
+export circuit registerPolicy(policyId: Uint<32>, policy: LenderPolicy): [] {
+  const lender = deriveLenderIdentity(getRoleSecret());
+  assert(authorizedLenders.member(disclose(lender)), "Lender identity is not authorized");
+  assert(lender == policy.lenderIdentity, "Policy lender does not match caller");
+  assert(policy.minimumAmount > 0, "Policy minimum must be positive");
+  assert(policy.minimumAmount <= policy.maximumAmount, "Policy amount range is invalid");
+  assert(!policies.member(disclose(policyId)), "Policy version already exists");
+  policies.insert(disclose(policyId), disclose(policy));
+}
+
+export circuit requestFinancing(
+  commitment: InvoiceCommitment,
+  policyId: Uint<32>
+): [] {
+  const publicCommitment = disclose(commitment);
+  const publicPolicyId = disclose(policyId);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  assert(policies.member(publicPolicyId), "Lender policy does not exist");
+
+  const existing = invoices.lookup(publicCommitment);
+  const policy = policies.lookup(publicPolicyId);
+  const financingProof = getFinancingWitness();
+
+  assert(existing.status == InvoiceStatus.Accepted, "Invoice is not accepted");
+  assert(disclose(policy.active), "Lender policy is inactive");
+  assert(deriveInvoiceCommitment(financingProof.invoice) == commitment, "Private invoice does not open commitment");
+  assert(
+    deriveSupplierControlKey(commitment, financingProof.supplierControlSecret) == existing.supplierControlKey,
+    "Supplier control secret is invalid"
+  );
+
+  const expectedNullifier = deriveInvoiceNullifier(
+    financingProof.invoice.buyerIdentity,
+    financingProof.invoice.invoiceReference,
+    financingProof.buyerNullifierNonce
+  );
+  assert(expectedNullifier == existing.nullifier, "Buyer nullifier opening is invalid");
+  assert(!consumedNullifiers.member(disclose(expectedNullifier)), "Invoice was already financed");
+  assert(financingProof.invoice.currencyCode == policy.currencyCode, "Invoice currency does not match policy");
+  assert(financingProof.invoice.amountMinor >= policy.minimumAmount, "Invoice amount is below policy minimum");
+  assert(financingProof.invoice.amountMinor <= policy.maximumAmount, "Invoice amount exceeds policy maximum");
+  assert(financingProof.invoice.dueAt <= policy.latestInvoiceDueAt, "Invoice due date exceeds policy limit");
+  assert(blockTimeLt(disclose(financingProof.invoice.dueAt)), "Invoice is expired");
+  assert(blockTimeLt(disclose(policy.requestDeadline)), "Policy request window is closed");
+
+  invoices.insert(publicCommitment, disclose(InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.PendingFinancing,
+    policyId: policyId
+  }));
+}
+
+export circuit confirmFinancing(commitment: InvoiceCommitment): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.status == InvoiceStatus.PendingFinancing, "No pending financing request");
+  assert(policies.member(existing.policyId), "Pending lender policy does not exist");
+
+  const policy = policies.lookup(existing.policyId);
+  assert(policy.lenderIdentity == deriveLenderIdentity(getRoleSecret()), "Only the selected lender can confirm");
+  assert(!consumedNullifiers.member(existing.nullifier), "Invoice was already financed");
+  assert(blockTimeLt(policy.requestDeadline), "Pending financing request expired");
+
+  consumedNullifiers.insert(existing.nullifier);
+  invoices.insert(publicCommitment, InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.FinancedConfirmed,
+    policyId: existing.policyId
+  });
+}
+
+export circuit declineFinancing(commitment: InvoiceCommitment): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.status == InvoiceStatus.PendingFinancing, "No pending financing request");
+  const policy = policies.lookup(existing.policyId);
+  assert(policy.lenderIdentity == deriveLenderIdentity(getRoleSecret()), "Only the selected lender can decline");
+
+  invoices.insert(publicCommitment, InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.Accepted,
+    policyId: 0
+  });
+}
+
+export circuit releaseExpiredRequest(commitment: InvoiceCommitment): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.status == InvoiceStatus.PendingFinancing, "No pending financing request");
+  const policy = policies.lookup(existing.policyId);
+  assert(blockTimeGte(policy.requestDeadline), "Pending financing request has not expired");
+
+  invoices.insert(publicCommitment, InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.Accepted,
+    policyId: 0
+  });
+}
+
+export circuit markInvoicePaid(commitment: InvoiceCommitment): [] {
+  const publicCommitment = disclose(commitment);
+  assert(invoices.member(publicCommitment), "Invoice commitment is not registered");
+  const existing = invoices.lookup(publicCommitment);
+  assert(existing.buyerIdentity == deriveBuyerIdentity(getRoleSecret()), "Only the authorized buyer can mark paid");
+  assert(
+    existing.status == InvoiceStatus.Accepted ||
+    existing.status == InvoiceStatus.PendingFinancing ||
+    existing.status == InvoiceStatus.FinancedConfirmed,
+    "Invoice cannot be marked paid from its current state"
+  );
+
+  invoices.insert(publicCommitment, InvoiceRecord {
+    buyerIdentity: existing.buyerIdentity,
+    supplierControlKey: existing.supplierControlKey,
+    nullifier: existing.nullifier,
+    status: InvoiceStatus.Paid,
+    policyId: existing.policyId
+  });
+}
+
+circuit requireAdmin(): [] {
+  assert(contractAdmin == deriveAdminIdentity(getRoleSecret()), "Only the contract admin can perform this action");
+}
