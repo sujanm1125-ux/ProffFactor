@@ -7,7 +7,7 @@ describe('ProofFactor application shell', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Good morning, Northstar.' })).toBeInTheDocument();
     expect(screen.getByText('Synthetic data only.', { exact: false })).toBeInTheDocument();
-    expect(screen.getAllByText('PRIVATE INPUT').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('LOCAL ONLY').length).toBeGreaterThan(0);
   });
 
   it('switches to the buyer review experience', () => {
