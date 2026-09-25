@@ -9,6 +9,10 @@ coverage/
 .env.*
 !.env.example
 *.local
+*.db
+*.sqlite
+__pycache__/
+.pytest_cache/
 
 # Midnight generated/private artifacts
 private-state/
