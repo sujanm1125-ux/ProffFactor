@@ -1,88 +1,96 @@
-export type Role = 'supplier' | 'buyer' | 'lender' | 'viewer';
+/**
+ * Domain types for AegisBid zero-knowledge sealed-bid dApp.
+ */
 
-export type Section = 'overview' | 'invoices' | 'policies' | 'requests' | 'explorer' | 'demo' | 'admin';
+export type AuctionCategory = 'procurement' | 'liquidation' | 'otc-block' | 'spectrum-license';
+export type AuctionStatus = 'Open' | 'Closed' | 'Settled' | 'Cancelled';
+export type MidnightNetwork = 'preprod' | 'preview';
 
-export type InvoiceStatus =
-  | 'PROPOSED'
-  | 'ACCEPTED'
-  | 'PENDING_FINANCING'
-  | 'FINANCED_CONFIRMED'
-  | 'PAID'
-  | 'REJECTED'
-  | 'CANCELLED'
-  | 'EXPIRED';
-
-export type PrivacyLevel = 'LOCAL ONLY' | 'PROVED, NOT SHARED' | 'PUBLIC ON-CHAIN';
-
-export interface Invoice {
+export interface Auction {
   id: string;
-  alias: string;
-  supplierAlias: string;
-  buyerAlias: string;
-  commitment: string;
-  nullifier: string | null;
-  status: InvoiceStatus;
-  currency: 'USD' | 'EUR' | 'GBP';
-  amountMinor: number;
-  dueWindow: string;
-  dueDate: string;
-  updatedAt: string;
-  policyId: string | null;
-  proofVerified: boolean;
-}
-
-export interface Policy {
-  id: string;
-  lenderAlias: string;
-  currency: Invoice['currency'];
-  minMinor: number;
-  maxMinor: number;
-  maxRemainingDays: number;
-  active: boolean;
-}
-
-export type TransactionStageId = 'proof' | 'wallet' | 'submit' | 'finality';
-export type TransactionStageState = 'waiting' | 'active' | 'complete' | 'error';
-
-export interface TransactionStage {
-  id: TransactionStageId;
-  label: string;
+  auctionIdHex: string;
+  title: string;
   description: string;
-  state: TransactionStageState;
+  category: AuctionCategory;
+  reservePrice: bigint;
+  currency: string;
+  biddingDeadlineBlock: bigint;
+  sellerIdentityHex: string;
+  status: AuctionStatus;
+  highestCommitmentHex?: string;
+  clearedAmount?: bigint;
+  winnerIdentityHex?: string;
+  contractAddress?: string;
+  network: MidnightNetwork;
+  bidsCount: number;
 }
 
-export interface ActivityItem {
+export interface LocalBidderSecret {
   id: string;
-  invoiceAlias: string;
-  message: string;
+  label: string;
+  secretHex: string;
+  derivedIdentityHex: string;
+  createdAt: string;
+}
+
+export interface StagedBidWitness {
+  auctionIdHex: string;
+  bidderSecretHex: string;
+  amount: bigint;
+  saltHex: string;
+  commitmentHex: string;
+  nullifierHex: string;
+  reserveCompliant: boolean;
+}
+
+export interface ProofProgressStep {
+  id: string;
+  title: string;
+  detail: string;
+  status: 'idle' | 'running' | 'completed' | 'failed';
+}
+
+export interface FinalizedReceipt {
+  id: string;
+  auctionIdHex: string;
+  transactionId: string;
+  commitmentHex: string;
+  nullifierHex: string;
+  circuitName: string;
+  proofOutcome: 'finalized' | 'simulated_local';
+  blockHeight?: number;
+  network: MidnightNetwork;
+  disclosureScope: {
+    disclosedFields: string[];
+    hiddenWitnessFields: string[];
+    provenPredicates: string[];
+  };
   timestamp: string;
+  demoMode: boolean;
 }
 
-export interface RegisteredUser {
-  id: string;
-  displayName: string;
-  walletName: string;
+export interface WalletState {
+  connected: boolean;
   walletId: string;
-  walletAddress: string;
-  role: Role;
-  connectedAt: string;
-  demo: boolean;
+  walletName: string;
+  is1AM: boolean;
+  unshieldedAddress: string;
+  network: MidnightNetwork;
+  isDemo: boolean;
+  error?: string;
 }
 
-export interface TransactionAudit {
-  id: string;
-  userName: string;
-  walletAddress: string;
-  invoiceAlias: string;
-  action: string;
-  timestamp: string;
-  demo: boolean;
-}
-
-export interface NewInvoiceInput {
-  alias: string;
-  buyerAlias: string;
-  amount: string;
-  currency: Invoice['currency'];
-  dueDate: string;
+export interface GeminiPlan {
+  recommendedTitle: string;
+  auctionCategory: string;
+  suggestedReservePrice: number;
+  proofPlanSummary: string;
+  privacyAnalysis: Array<{
+    field_name: string;
+    visibility: string;
+    storage_location: string;
+    zk_justification: string;
+  }>;
+  complianceNotes: string;
+  fallbackUsed: boolean;
 }
