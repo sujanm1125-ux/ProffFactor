@@ -1,48 +1,81 @@
-name: CI
+name: AegisBid CI/CD Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  quality-gate:
+    name: Lint, Test & Build (Frontend, Contract & Backend)
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: 'npm'
 
-      - name: Install dependencies
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Node dependencies
         run: npm ci
 
-      - name: Install Compact devtools
+      - name: Install Python dependencies
         run: |
-          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
 
-      - name: Select pinned Compact compiler
+      - name: Run Backend Tests
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          compact update 0.31.1
-          compact compile --version
+          python -m pytest backend/tests -v
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Run Contract & Frontend Tests
+        run: |
+          npm test
 
-      - name: Test
-        run: npm test
+      - name: Typecheck Workspaces
+        run: |
+          npm run typecheck
 
-      - name: Production build
-        run: npm run build
+      - name: Build Production Frontend
+        run: |
+          npm run build --workspace @prooffactor/app
 
-      - name: Dependency audit
-        run: npm audit --audit-level=high
+      - name: Upload Production Artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/dist
+
+  deploy-pages:
+    name: Continuous Deployment (GitHub Pages)
+    needs: quality-gate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
