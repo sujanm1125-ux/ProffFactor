@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/overview/supplier": {
+      "targetKind": "new-ui",
+      "projectId": "20deb049-858a-4e29-9e2a-c149daf2f393",
+      "activeDraftId": "bf6c0b94-2329-4e68-84ac-9fcd561fd89a",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "7f94a85acded5bd48727e67a1a90d3880e47df762bebb1db0d6a3314fa395794"
+      },
+      "drafts": {
+        "bf6c0b94-2329-4e68-84ac-9fcd561fd89a": {
+          "title": "ProofFactor Supplier Operations",
+          "visualDirection": "technical-minimalist role-first financial operations dashboard",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-25T06:46:47.1713968Z"
+    }
+  }
+}
