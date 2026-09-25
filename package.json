@@ -1,0 +1,31 @@
+{
+  "name": "prooffactor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "app",
+    "contract"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @prooffactor/app",
+    "build": "npm run build --workspace @prooffactor/contract && npm run build --workspace @prooffactor/app",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "compile:contract": "npm run compact --workspace @prooffactor/contract",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "overrides": {
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "smoldot": "npm:empty-npm-package@1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "6.4.3",
+    "vitest": "4.1.11"
+  }
+}
