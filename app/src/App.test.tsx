@@ -2,41 +2,55 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
-describe('ProofFactor application shell', () => {
-  it('renders the supplier decision-first dashboard', () => {
+describe('AegisBid Application Shell Tests', () => {
+  it('renders the brand title and main auction list', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Good morning, Northstar.' })).toBeInTheDocument();
-    expect(screen.getByText('Synthetic data only.', { exact: false })).toBeInTheDocument();
-    expect(screen.getAllByText('LOCAL ONLY').length).toBeGreaterThan(0);
+    expect(screen.getByText('AEGISBID')).toBeInTheDocument();
+    expect(screen.getByText('ZK-SEALED BID PROTOCOL')).toBeInTheDocument();
+    expect(screen.getByText('Confidential Sealed-Bid Registry')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CONNECT WALLET/i })).toBeInTheDocument();
   });
 
-  it('switches to the buyer review experience', () => {
+  it('switches between tabs cleanly', () => {
     render(<App />);
-    fireEvent.change(screen.getByLabelText('Selected role'), { target: { value: 'buyer' } });
-    expect(screen.getByRole('heading', { name: 'Review acknowledged invoices.' })).toBeInTheDocument();
-    expect(screen.getByText('Buyer review queue')).toBeInTheDocument();
+    // Switch to Privacy Matrix
+    fireEvent.click(screen.getByRole('button', { name: /PRIVACY MATRIX/i }));
+    expect(screen.getByText('Cryptographic Privacy Boundary')).toBeInTheDocument();
+    expect(screen.getByText('Observer Disclosure Matrix')).toBeInTheDocument();
+
+    // Switch to Gemini Architect
+    fireEvent.click(screen.getByRole('button', { name: /GEMINI ARCHITECT/i }));
+    expect(screen.getByText('Gemini Procurement Architect')).toBeInTheDocument();
+
+    // Switch to Metrics
+    fireEvent.click(screen.getByRole('button', { name: /METRICS/i }));
+    expect(screen.getByText('Protocol & Public Ledger Metrics')).toBeInTheDocument();
   });
 
-  it('opens the invoice registration workflow', () => {
+  it('opens wallet modal and supports demo wallet sandbox launch', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Register invoice' }));
-    expect(screen.getByRole('dialog', { name: 'Register invoice commitment' })).toBeInTheDocument();
-    expect(screen.getByText('Private fields stay local in this demo.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /CONNECT WALLET/i }));
+    expect(screen.getByText('Connect Midnight Wallet')).toBeInTheDocument();
+
+    // Click demo sandbox wallet
+    fireEvent.click(screen.getByText('Launch Demo Simulation Wallet'));
+    // Modal closes and wallet shows DEMO status
+    expect(screen.getByText('DEMO')).toBeInTheDocument();
   });
 
-  it('requires a display name before showing wallet choices', () => {
+  it('resets connected wallet session when network is changed', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Connect wallet' }));
-    expect(screen.getByRole('heading', { name: 'Choose a wallet' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Display name')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Use demo wallet' })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Maya Chen' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(screen.getByRole('button', { name: 'Use demo wallet' })).toBeInTheDocument();
-  });
+    // Connect demo wallet
+    fireEvent.click(screen.getByRole('button', { name: /CONNECT WALLET/i }));
+    fireEvent.click(screen.getByText('Launch Demo Simulation Wallet'));
+    expect(screen.getByText('DEMO')).toBeInTheDocument();
 
-  it('keeps the operator admin panel out of the user navigation', () => {
-    render(<App />);
-    expect(screen.queryByRole('button', { name: 'Admin panel' })).not.toBeInTheDocument();
+    // Switch network to preview
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'preview' } });
+
+    // Wallet session must be reset to disconnected state per security requirements
+    expect(screen.queryByText('DEMO')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CONNECT WALLET/i })).toBeInTheDocument();
   });
 });
