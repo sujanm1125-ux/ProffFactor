@@ -62,11 +62,13 @@ Midnight is necessary because the application needs shared, verifiable state cha
 ## Links and release evidence
 
 - Repository: https://github.com/sujanm1125-ux/ProffFactor
-- Live frontend: Pending Preprod hosting
+- Live frontend: https://proff-factor-5674jjdnn-sm-17fa.vercel.app/
 - Contract address: Pending Preprod deployment
 - Deployment transaction: Pending Preprod deployment
 - End-to-end Lace transaction: Pending funded Preprod wallet
 - Demo video: Pending recording
+- Live evidence screenshots: [landing.png](screenshots/landing.png) and [workspace.png](screenshots/workspace.png)
+
 
 ## Honest limitations
 

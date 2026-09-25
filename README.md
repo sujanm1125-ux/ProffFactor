@@ -17,6 +17,18 @@ The repository contains:
 The local product demo is complete. A live Preprod deployment is intentionally not claimed: it still requires a funded Preprod Lace wallet, a running proof server, and recording the resulting contract address and transaction ID.
 
 ## Privacy boundary
+## Live demo
+
+**Vercel deployment:** [proff-factor-5674jjdnn-sm-17fa.vercel.app](https://proff-factor-5674jjdnn-sm-17fa.vercel.app/)
+
+### Submission evidence
+
+![ProofFactor landing page](docs/screenshots/landing.png)
+
+![ProofFactor supplier workspace](docs/screenshots/workspace.png)
+
+The published demo uses synthetic data and clearly labels local/demo actions. It does not claim live Midnight transaction submission.
+
 
 Private inputs:
 
