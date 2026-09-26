@@ -1,138 +1,182 @@
-# ProofFactor
+# AegisBid
 
-> Finance the invoice, not the company's secrets.
+[![AegisBid CI/CD Pipeline](https://github.com/sujanm1125-ux/ProffFactor/actions/workflows/ci.yml/badge.svg)](https://github.com/sujanm1125-ux/ProffFactor/actions/workflows/ci.yml)
 
-ProofFactor is a privacy-preserving B2B invoice verification and financing demo for Midnight. A supplier commits an invoice, an authorized buyer attests to it, and a lender can verify policy eligibility without publishing the invoice amount, due date, reference, or raw business data.
+> Confidential Zero-Knowledge Sealed-Bid Procurement & Liquidation Engine on Midnight.
 
-## Current status
+AegisBid enables government agencies, defense contractors, and financial institutions to conduct sealed-bid procurement and asset liquidations. Bidders mathematically prove eligibility and reserve-price compliance in zero-knowledge without revealing their exact valuations or bidding strategies.
 
-The repository contains:
+---
 
-- A responsive React application with supplier, buyer, lender, public-explorer, and guided-demo views.
-- Injected Midnight wallet discovery with an explicitly labeled demo-wallet fallback.
-- A Compact 0.31.1 contract with 13 circuits and generated proving/verifying artifacts.
-- Contract simulator tests for role authorization, lifecycle transitions, supplier control, stable-nullifier reuse prevention, and block-time expiry.
-- Frontend state-machine and interaction tests.
+## 1. Product Overview & Real-World Problem
 
-The local product demo is complete. A live Preprod deployment is intentionally not claimed: it still requires a funded Preprod Lace wallet, a running proof server, and recording the resulting contract address and transaction ID.
+In traditional public smart contract auctions, all bids are visible in the mempool or on-chain. This creates:
+1. **Front-running & Sniping:** Malicious actors outbid legitimate participants by tiny increments at the last second.
+2. **Strategy Leakage:** Competitors inspect counterparties' financial capacity, pricing models, and commercial margin.
 
-## Privacy boundary
-## Live demo
+In traditional centralized auctions, bidders must trust a third-party auctioneer who can collude, leak bids, or censor participants.
 
-**Vercel deployment:** [proff-factor-5674jjdnn-sm-17fa.vercel.app](https://proff-factor-5674jjdnn-sm-17fa.vercel.app/)
+**AegisBid uses Midnight to eliminate this trade-off:**
+- Bidders formulate a **private witness** on their device containing their valuation, secret key, and salt entropy.
+- A **Compact zero-knowledge circuit** verifies on-chain that the bid satisfies the reserve price (`bidAmount >= reservePrice`).
+- An anti-replay **nullifier** prevents double-bidding without revealing the bidder's identity.
+- Winning bids are revealed upon settlement, while all losing bids remain confidential forever.
 
-### Submission evidence
+---
 
-![ProofFactor landing page](docs/screenshots/landing.png)
+## 2. Privacy Model
 
-![ProofFactor supplier workspace](docs/screenshots/workspace.png)
+| Observer | What They CAN Learn | What They CANNOT Learn |
+|---|---|---|
+| **Public Observer / Explorer** | 32-byte commitment hash, 32-byte nullifier, auction ID, block height, reserve compliance boolean (`true`) | Exact bid amount, bidder secret identity, random salt entropy, losing bids |
+| **Auction Seller / Verifier** | Proof that bid exceeds reserve price, total bids count, winning bid upon settlement | Non-winning bid amounts, bidder balance, unselected vendor strategy |
+| **Gemini AI Assistant** | Public RFP description, procurement category, minimum reserve price | Private witnesses, holder secrets, seed phrases, wallet addresses, raw bids |
+| **Backend Database (Neon/SQLite)** | Public auction records, finalized transaction IDs, public proof receipts | Confidential witness fields (strictly rejected by Pydantic schema validation) |
+| **Local Client Device** | Complete private witness, secret key, salt, exact bid, generated proof | Other participants' private witnesses |
 
-The published demo uses synthetic data and clearly labels local/demo actions. It does not claim live Midnight transaction submission.
+---
 
+## 3. Technology Stack
 
-Private inputs:
+- **Smart Contract:** Compact 0.31.1 smart contract with 5 circuits (`createAuction`, `submitSealedBid`, `closeBidding`, `revealAndSettle`, `cancelAuction`).
+- **Privacy Network:** Midnight Preview and Preprod compatibility, Docker proof server 8.1.0, Compact devtools 0.5.1.
+- **Frontend:** React 19, TypeScript, Vite 6, Framer Motion, Midnight DApp Connector v4 (with 1AM wallet priority and interactive simulation fallback), Swiss Information Design system.
+- **Backend:** FastAPI, Python 3.12+, SQLAlchemy async, Alembic migrations, Pydantic v2 validation with privacy guardrails.
+- **Database:** Neon Postgres (branch-first workflow: direct URL for migrations, pooled URL for API) with SQLite local dev fallback.
+- **AI Integration:** Google GenAI SDK (`google-genai`) with regex sanitization, structured output, and deterministic local fallback.
+- **CI/CD:** GitHub Actions compiling Compact contracts, verifying ZK artifacts, running 35+ tests across contract, frontend, and backend, and building production bundles.
 
-- Invoice reference and salt
-- Supplier and buyer identities before selective disclosure
-- Amount, currency, and due date
-- Supplier control secret
-- Buyer nullifier nonce
-- Role secrets used to derive admin, buyer, and lender identities
+---
 
-Public ledger state:
+## 4. Quick Start & Local Setup
 
-- Invoice commitment
-- Pseudonymous buyer identity
-- Supplier control key
-- Stable invoice nullifier after buyer acceptance
-- Lifecycle status and selected policy ID
-- Public lender policy ranges and deadlines
-
-The contract proves that a committed invoice satisfies a selected policy. It does not settle fiat payments, validate the legal authenticity of source documents, or hide transaction timing.
-
-## Quick start
-
-Requirements:
-
+### Prerequisites
 - Node.js 22 or newer
-- npm 10 or newer
-- WSL2 Ubuntu on Windows
-- Compact devtools 0.5.1 with compiler 0.31.1
-- Docker Desktop for proof generation
+- Python 3.11 or newer
+- Docker Desktop (for Midnight proof server)
+- WSL2 Ubuntu-22.04 with Compact devtools 0.5.1 (for contract compilation)
 
-Install and verify:
-
-```powershell
+### 1. Install Dependencies
+```bash
+# Install root, frontend, and contract dependencies
 npm install
-npm run compile:contract
-npm run typecheck
+
+# Install Python backend dependencies
+pip install -r backend/requirements.txt
+```
+
+### 2. Run Quality Gates & Tests (35 Tests)
+```bash
+# Run contract & frontend tests (vitest)
 npm test
+
+# Run backend tests (pytest)
+python -m pytest backend/tests -v
+
+# Run full TypeScript typecheck
+npm run typecheck
+
+# Build contract & frontend production bundle
 npm run build
 ```
 
-Run the interactive app:
-
-```powershell
-npm run dev
-```
-
-Open `http://localhost:5173` for the product landing page. Select **Explore the workspace** or open `http://localhost:5173/app` to enter the interactive dashboard. Without an injected Midnight wallet, choose the clearly labeled demo wallet to explore the complete synthetic workflow.
-
-## Proof server
-
-Start the pinned local proof server:
-
-```powershell
+### 3. Start Local Proof Server (Docker)
+```bash
 docker compose -f proof-server.yml up -d
 docker compose -f proof-server.yml ps
 ```
+The proof server listens on `http://127.0.0.1:6300`.
 
-It listens on `http://127.0.0.1:6300`. Stop it with:
+### 4. Run Development Services
+```bash
+# Terminal 1: Start FastAPI Backend
+uvicorn backend.src.main:app --host 127.0.0.1 --port 8000 --reload
 
-```powershell
-docker compose -f proof-server.yml down
+# Terminal 2: Start Frontend Application
+npm run dev
 ```
+Open `http://localhost:5173` in your browser.
 
-## Repository map
+---
+
+## 5. Wallet Connection & 1AM Integration
+
+1. Click **Connect Wallet** in the top navigation bar.
+2. AegisBid scans `window.midnight` for UUID-keyed providers, prioritizing the **1AM Wallet**.
+3. Select your network (**Midnight Preprod** or **Midnight Preview**).
+4. If running without browser extensions, click **Launch Demo Simulation Wallet** to test the entire zero-knowledge workflow in an interactive sandbox.
+5. Switching networks automatically resets the wallet session to prevent cross-network credential leakage.
+
+---
+
+## 6. Neon Database Setup (Branch-First Workflow)
+
+AegisBid supports Neon's branch-first branching model:
+1. Set `DATABASE_URL` in `.env` to your **pooled** Neon connection string (for async API traffic).
+2. Set `DIRECT_DATABASE_URL` in `.env` to your **direct** Neon connection string (for Alembic migrations).
+3. Run migrations:
+```bash
+cd backend
+alembic upgrade head
+```
+*(By default, AegisBid falls back to SQLite `sqlite+aiosqlite:///./aegisbid.db` for zero-configuration local development.)*
+
+---
+
+## 7. Gemini Assistant Privacy Boundary
+
+To enable the AI Procurement Architect with live Google GenAI:
+1. Set `GEMINI_API_KEY=your_key_here` in `.env`.
+2. The backend actively redacts 64-character hex strings, secret clauses, and confidential valuations before transmitting the prompt.
+3. If no key is set or the service is offline, AegisBid automatically engages its **deterministic offline proof planner**.
+
+---
+
+## 8. Repository Structure
 
 ```text
-app/                         React/Vite product interface
-contract/src/prooffactor.compact
-                             Compact source
-contract/src/prooffactor.test.ts
-                             In-memory contract invariant tests
-contract/src/managed/        Generated bindings, ZK IR, and keys
-docs/ARCHITECTURE.md         Components and transaction boundaries
-docs/PRIVACY.md              Public/private data and limitations
-docs/DEMO.md                 Repeatable judging walkthrough
-plan.md                      Living delivery and competition plan
-VERSIONS.md                  Pinned Midnight compatibility set
+├── .github/workflows/ci.yml       # GitHub Actions CI/CD pipeline
+├── backend/
+│   ├── alembic/                   # Alembic migrations & environment
+│   ├── src/
+│   │   ├── config.py              # Environment configuration
+│   │   ├── database.py            # Async SQLAlchemy connection
+│   │   ├── models.py              # Public auction & receipt models
+│   │   ├── schemas.py             # Pydantic schemas with privacy guardrails
+│   │   ├── gemini_service.py      # Sanitized Google GenAI integration
+│   │   ├── routes/                # Health, metrics, assistant & receipts
+│   │   └── main.py                # FastAPI application entrypoint
+│   └── tests/                     # Pytest suite (health, privacy, receipts)
+├── contract/
+│   ├── src/
+│   │   ├── aegisbid.compact       # Compact 0.31.1 smart contract
+│   │   ├── aegisbid.test.ts       # Contract invariant & ZK circuit tests
+│   │   └── managed/aegisbid/      # Compiled ZK-IR, keys, and JS bindings
+│   └── scripts/compile-contract.mjs
+├── app/
+│   ├── src/
+│   │   ├── components/            # Header, AuctionList, BidModal, etc.
+│   │   ├── domain/                # Domain types & client privateState manager
+│   │   ├── lib/                   # Wallet connector & contract client
+│   │   ├── tests/                 # Vitest frontend test suite
+│   │   ├── styles.css             # Swiss Information Design system
+│   │   └── App.tsx                # Application shell
+│   └── index.html
+├── docs/                          # Proposal, Privacy Model, Architecture, Demo Script
+├── proof-server.yml               # Docker Compose for Midnight proof server
+├── .env.example                   # Environment variable template
+└── README.md
 ```
 
-## Important scripts
+---
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Start the frontend |
-| `npm run compile:contract` | Compile all Compact circuits |
-| `npm run typecheck` | Type-check every workspace |
-| `npm test` | Run frontend and contract tests |
-| `npm run build` | Compile the contract and build the production app |
-| `npm run check` | Run the full local quality gate |
+## 9. Honest Limitations & Future Work
 
-## Preprod release checklist
+- **Asset Settlement:** The current prototype demonstrates cryptographic bid commitment, nullifier enforcement, and reserve verification. Settlement of secondary tokens requires integration with unshielded Midnight tokens or bridge contracts.
+- **Tie-Breaking:** If two bidders disclose identical valuations upon settlement, the contract awards the earliest committed block timestamp. Future iterations can implement multi-party threshold decryption.
 
-1. Install and unlock Midnight Lace on Preprod.
-2. Fund the wallet with test tokens through the official faucet.
-3. Start proof server 8.1.0.
-4. Replace demo transport with the Midnight.js 4.1.1 contract provider.
-5. Deploy the generated ProofFactor contract artifacts.
-6. Record the contract address and deployment transaction in `plan.md`.
-7. Exercise supplier registration, buyer acceptance, financing request, lender confirmation, and paid status with real transactions.
-8. Publish the frontend and record the deployment URL.
+---
 
-See [plan.md](./plan.md) for the complete requirement and evidence register.
+## 10. License
 
-## Safety
-
-ProofFactor is a competition prototype, not audited financial software. Use synthetic invoice data only. Never commit wallet seeds, mnemonics, private state, customer documents, or real invoice data. See [SECURITY.md](./SECURITY.md).
+Apache-2.0. Built for the Midnight Privacy Network.
