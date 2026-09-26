@@ -9,14 +9,15 @@ describe('AegisBid Application Shell Tests', () => {
     expect(screen.getByText('ZK-SEALED BID PROTOCOL')).toBeInTheDocument();
     expect(screen.getByText('Confidential Sealed-Bid Registry')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /CONNECT WALLET/i })).toBeInTheDocument();
+    expect(screen.getByText(/The Architecture of/i)).toBeInTheDocument();
   });
 
   it('switches between tabs cleanly', () => {
     render(<App />);
-    // Switch to Bidder Haven
-    fireEvent.click(screen.getByRole('button', { name: /BIDDER HAVEN/i }));
-    expect(screen.getByText('入札者の私室')).toBeInTheDocument();
-    expect(screen.getByText('机上算定シミュレーター')).toBeInTheDocument();
+    // Switch to Bidder Haven via nav tab
+    fireEvent.click(screen.getByRole('button', { name: /03 BIDDER HAVEN/i }));
+    expect(screen.getByText(/Bidder Haven & Sovereign Vault/i)).toBeInTheDocument();
+    expect(screen.getByText(/Confidential Margin Simulator/i)).toBeInTheDocument();
 
     // Switch to Privacy Matrix
     fireEvent.click(screen.getByRole('button', { name: /PRIVACY MATRIX/i }));

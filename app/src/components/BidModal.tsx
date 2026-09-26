@@ -107,10 +107,10 @@ export const BidModal: React.FC<BidModalProps> = ({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
               <span className="hanko-seal">密印</span>
-              <span className="eyebrow">THREE-STAGE SEALING CEREMONY / 三段階の封緘プロトコル</span>
+              <span className="eyebrow">THREE-STAGE CRYPTOGRAPHIC SEALING CEREMONY</span>
             </div>
-            <h2 className="font-mincho" style={{ fontSize: '1.4rem', fontWeight: 700 }}>
-              機密入札の封緘 <span style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 400 }}>Sealed-Bid Ceremony</span>
+            <h2 className="font-mincho" style={{ fontSize: '1.45rem', fontWeight: 700 }}>
+              Submit Confidential Sealed Bid
             </h2>
           </div>
           <button className="btn btn-secondary btn-sm" onClick={onClose}>
@@ -120,27 +120,27 @@ export const BidModal: React.FC<BidModalProps> = ({
 
         {/* Auction Lot Summary */}
         <div style={{ background: 'var(--bg-elevated)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)' }}>
-          <div className="eyebrow" style={{ color: 'var(--accent-shu)', marginBottom: '0.2rem' }}>対象調達案件 LOT DETAILS</div>
+          <div className="eyebrow" style={{ color: 'var(--accent-shu)', marginBottom: '0.2rem' }}>TARGET PROCUREMENT LOT</div>
           <div className="font-mincho" style={{ fontWeight: 600, fontSize: '1.05rem' }}>{auction.title}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.85rem' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>最低予定価格 (Minimum Reserve):</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Minimum Reserve Price:</span>
             <strong className="mono" style={{ color: 'var(--accent-yamabuki)' }}>
               {auction.reservePrice.toLocaleString()} {auction.currency}
             </strong>
           </div>
         </div>
 
-        {/* Step 壱: 私的算定 (Private Valuation) */}
+        {/* Phase 01: Private Valuation */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
             <span className="kanji-step">壱</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>私的算定 (Private Valuation)</span>
-            <span className="badge badge-mint" style={{ marginLeft: 'auto' }}>端末内隔離 LOCAL ONLY</span>
+            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 01 &bull; Private Valuation Formulation</span>
+            <span className="badge badge-mint" style={{ marginLeft: 'auto' }}>LOCAL MEMORY ONLY</span>
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label">
-              提案評価額 ({auction.currency}) — 貴社端末内にのみ留まり、外部通信されません
+              Private Bid Valuation ({auction.currency}) — Remains on your physical device
             </label>
             <input
               type="number"
@@ -153,46 +153,46 @@ export const BidModal: React.FC<BidModalProps> = ({
             {!isReserveCompliant ? (
               <div style={{ color: 'var(--accent-danger)', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <AlertTriangle size={13} />
-                <span>警告：回路制約を満たすため、最低価格（{auction.reservePrice.toLocaleString()} {auction.currency}）以上を入力してください。</span>
+                <span>Constraint warning: Bid must meet or exceed minimum reserve ({auction.reservePrice.toLocaleString()} {auction.currency}).</span>
               </div>
             ) : (
               <div style={{ color: 'var(--accent-matsuba)', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Check size={13} />
-                <span>予定価格基準を満たしています（余力: +{(bidAmount - auction.reservePrice).toLocaleString()} {auction.currency}）</span>
+                <span>Reserve threshold satisfied (Margin headroom: +{(bidAmount - auction.reservePrice).toLocaleString()} {auction.currency})</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Step 弐: 暗号封緘 (Cryptographic Sealing) */}
+        {/* Phase 02: Cryptographic Sealing */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
             <span className="kanji-step">弐</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>暗号封緘 (Cryptographic Sealing)</span>
+            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 02 &bull; Cryptographic Commitment &amp; Salt</span>
             <span className="badge badge-shu" style={{ marginLeft: 'auto' }}>PEDERSEN & POSEIDON</span>
           </div>
 
           <div style={{ background: 'var(--bg-core)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">公開封緘コミットメント (32-Byte Public Anchor):</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">Public Bid Commitment Anchor (32-Bytes):</div>
               <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-matsuba)', wordBreak: 'break-all' }}>
-                {commitmentHex || '計算中...'}
+                {commitmentHex || 'Computing commitment...'}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">二重入札抑止識別子 (Anti-Replay Nullifier):</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">Anti-Replay Nullifier Digest:</div>
               <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-cobalt)', wordBreak: 'break-all' }}>
-                {nullifierHex || '計算中...'}
+                {nullifierHex || 'Computing nullifier...'}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Step 参: 零知識証明 (Zero-Knowledge Attestation) */}
+        {/* Phase 03: Zero-Knowledge Submission */}
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
             <span className="kanji-step">参</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>零知識証明提出 (ZK Submission)</span>
+            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 03 &bull; Midnight Zero-Knowledge Attestation</span>
             <span className="badge badge-mint" style={{ marginLeft: 'auto' }}>COMPACT 0.31.1</span>
           </div>
 
@@ -204,9 +204,9 @@ export const BidModal: React.FC<BidModalProps> = ({
                 onChange={(e) => setAcknowledged(e.target.checked)}
                 style={{ marginTop: '0.25rem', accentColor: 'var(--accent-shu)' }}
               />
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                貴社の正確な評価額（<strong>{bidAmount.toLocaleString()} {auction.currency}</strong>）は台帳にも主催者にも開示されません。
-                Midnight 零知識回路により「予定価格以上である」という数学的事実と封緘コミットメントのみを提出することを確認します。
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                I confirm that my exact valuation of <strong>{bidAmount.toLocaleString()} {auction.currency}</strong> will remain private.
+                Only the zero-knowledge proof of reserve compliance and the 32-byte public commitment will be recorded on the Midnight ledger.
               </span>
             </label>
           </div>
@@ -233,7 +233,7 @@ export const BidModal: React.FC<BidModalProps> = ({
           onClick={handleSubmit}
         >
           <Shield size={16} />
-          <span>{progressMsg ? '証明生成中 PROVING CIRCUIT...' : '封緘証明を発行し提出 EXECUTE SEALED SUBMISSION'}</span>
+          <span>{progressMsg ? 'PROVING CIRCUIT...' : 'GENERATE ZK PROOF & SUBMIT BID'}</span>
         </button>
       </div>
     </div>

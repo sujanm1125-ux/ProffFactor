@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Header, NavigationTab } from './components/Header';
+import { LandingPage } from './components/LandingPage';
 import { AuctionList } from './components/AuctionList';
 import { BidderHaven } from './components/BidderHaven';
 import { PrivacyBoundaryView } from './components/PrivacyBoundaryView';
@@ -59,7 +60,7 @@ const INITIAL_AUCTIONS: Auction[] = [
 
 export function App() {
   const [wallet, setWallet] = useState<WalletState>(getInitialWalletState());
-  const [activeTab, setActiveTab] = useState<NavigationTab>('auctions');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [auctions, setAuctions] = useState<Auction[]>(INITIAL_AUCTIONS);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -105,6 +106,15 @@ export function App() {
       />
 
       <main>
+        {activeTab === 'overview' && (
+          <LandingPage
+            wallet={wallet}
+            auctions={auctions}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+            onSelectBid={(auc) => setSelectedAuction(auc)}
+          />
+        )}
+
         {activeTab === 'auctions' && (
           <AuctionList
             auctions={auctions}

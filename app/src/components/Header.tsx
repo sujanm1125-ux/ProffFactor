@@ -2,7 +2,7 @@ import React from 'react';
 import { Shield, Radio, Wallet, LogOut, Sparkles, Terminal } from 'lucide-react';
 import { MidnightNetwork, WalletState } from '../domain/types';
 
-export type NavigationTab = 'auctions' | 'bidder' | 'privacy' | 'assistant' | 'metrics';
+export type NavigationTab = 'overview' | 'auctions' | 'bidder' | 'privacy' | 'assistant' | 'metrics';
 
 interface HeaderProps {
   wallet: WalletState;
@@ -24,12 +24,11 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header-bar">
       <div className="brand-section">
-        <div className="brand-logo">
+        <div className="brand-logo" onClick={() => onSelectTab('overview')} style={{ cursor: 'pointer' }}>
           <span className="hanko-seal">密印</span>
           <span className="font-mincho" style={{ fontWeight: 800 }}>AEGISBID</span>
         </div>
         <span className="brand-tag">ZK-SEALED BID PROTOCOL</span>
-        <span className="hanko-seal hanko-seal-sm">零知識</span>
         <span className="badge badge-mint">
           <Radio size={12} className="animate-pulse" />
           {wallet.network.toUpperCase()}
@@ -38,38 +37,44 @@ export const Header: React.FC<HeaderProps> = ({
 
       <nav className="tabs-container" style={{ margin: 0, border: 'none' }}>
         <button
+          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => onSelectTab('overview')}
+        >
+          <span>01 OVERVIEW</span>
+        </button>
+        <button
           className={`tab-btn ${activeTab === 'auctions' ? 'active' : ''}`}
           onClick={() => onSelectTab('auctions')}
         >
           <Terminal size={14} />
-          <span>01 案件一覧 AUCTIONS</span>
+          <span>02 TENDERS</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'bidder' ? 'active' : ''}`}
           onClick={() => onSelectTab('bidder')}
         >
           <Shield size={14} style={{ color: 'var(--accent-shu)' }} />
-          <span>02 入札者私室 BIDDER HAVEN</span>
+          <span>03 BIDDER HAVEN</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
           onClick={() => onSelectTab('privacy')}
         >
           <Shield size={14} />
-          <span>03 機密体系 PRIVACY MATRIX</span>
+          <span>04 PRIVACY MATRIX</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'assistant' ? 'active' : ''}`}
           onClick={() => onSelectTab('assistant')}
         >
           <Sparkles size={14} />
-          <span>04 知性相談 GEMINI ARCHITECT</span>
+          <span>05 GEMINI ARCHITECT</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
           onClick={() => onSelectTab('metrics')}
         >
-          <span>05 検証台帳 METRICS</span>
+          <span>06 METRICS</span>
         </button>
       </nav>
 
