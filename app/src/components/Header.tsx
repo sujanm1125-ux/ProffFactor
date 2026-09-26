@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Radio, Wallet, LogOut, Sparkles, Terminal } from 'lucide-react';
+import { Radio, Wallet, LogOut } from 'lucide-react';
 import { MidnightNetwork, WalletState } from '../domain/types';
 
 export type NavigationTab = 'overview' | 'auctions' | 'bidder' | 'privacy' | 'assistant' | 'metrics';
@@ -13,106 +13,107 @@ interface HeaderProps {
   onNetworkChange: (network: MidnightNetwork) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps & { userName?: string | null }> = ({
   wallet,
   activeTab,
   onSelectTab,
   onOpenWalletModal,
   onDisconnectWallet,
   onNetworkChange,
+  userName,
 }) => {
   return (
-    <header className="header-bar">
-      <div className="brand-section">
-        <div className="brand-logo" onClick={() => onSelectTab('overview')} style={{ cursor: 'pointer' }}>
-          <span className="hanko-seal">密印</span>
-          <span className="font-mincho" style={{ fontWeight: 800 }}>AEGISBID</span>
-        </div>
-        <span className="brand-tag">ZK-SEALED BID PROTOCOL</span>
-        <span className="badge badge-mint">
-          <Radio size={12} className="animate-pulse" />
-          {wallet.network.toUpperCase()}
-        </span>
-      </div>
-
-      <nav className="tabs-container" style={{ margin: 0, border: 'none' }}>
-        <button
-          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => onSelectTab('overview')}
-        >
-          <span>01 OVERVIEW</span>
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'auctions' ? 'active' : ''}`}
-          onClick={() => onSelectTab('auctions')}
-        >
-          <Terminal size={14} />
-          <span>02 TENDERS</span>
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'bidder' ? 'active' : ''}`}
-          onClick={() => onSelectTab('bidder')}
-        >
-          <Shield size={14} style={{ color: 'var(--accent-shu)' }} />
-          <span>03 BIDDER HAVEN</span>
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
-          onClick={() => onSelectTab('privacy')}
-        >
-          <Shield size={14} />
-          <span>04 PRIVACY MATRIX</span>
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'assistant' ? 'active' : ''}`}
-          onClick={() => onSelectTab('assistant')}
-        >
-          <Sparkles size={14} />
-          <span>05 GEMINI ARCHITECT</span>
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
-          onClick={() => onSelectTab('metrics')}
-        >
-          <span>06 METRICS</span>
-        </button>
-      </nav>
-
-      <div className="nav-controls">
-        <select
-          className="form-select"
-          style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
-          value={wallet.network}
-          onChange={(e) => onNetworkChange(e.target.value as MidnightNetwork)}
-        >
-          <option value="preprod">Midnight Preprod</option>
-          <option value="preview">Midnight Preview</option>
-        </select>
-
-        {wallet.connected ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span className={`badge ${wallet.isDemo ? 'badge-amber' : 'badge-cobalt'}`}>
-              <Wallet size={12} />
-              {wallet.is1AM ? '1AM' : wallet.isDemo ? 'DEMO' : 'CONNECTED'}
-            </span>
-            <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {wallet.unshieldedAddress.slice(0, 10)}...{wallet.unshieldedAddress.slice(-6)}
-            </span>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={onDisconnectWallet}
-              title="Disconnect wallet session"
-            >
-              <LogOut size={13} />
-            </button>
+    <header className="header-bar header-grid" style={{ width: '100vw' }}>
+      <div className="brand-section" style={{ padding: '1.25rem 2.5rem', borderRight: '2px solid var(--border-strong)' }}>
+          <div className="brand-logo" onClick={() => onSelectTab('overview')}>
+            AEGISBID
           </div>
-        ) : (
-          <button className="btn btn-primary btn-sm" onClick={onOpenWalletModal}>
-            <Wallet size={14} />
-            CONNECT WALLET
+          <span className="brand-tag">Sealed-Bid Protocol</span>
+        </div>
+
+        <nav style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', width: '100%' }}>
+          <button
+            className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => onSelectTab('overview')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'overview' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Overview
           </button>
-        )}
-      </div>
+          <button
+            className={`tab-btn ${activeTab === 'auctions' ? 'active' : ''}`}
+            onClick={() => onSelectTab('auctions')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'auctions' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Tenders
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'bidder' ? 'active' : ''}`}
+            onClick={() => onSelectTab('bidder')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'bidder' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Bidder Haven
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
+            onClick={() => onSelectTab('privacy')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'privacy' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Privacy
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'assistant' ? 'active' : ''}`}
+            onClick={() => onSelectTab('assistant')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'assistant' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Advisor
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
+            onClick={() => onSelectTab('metrics')}
+            style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, border: 'none', color: activeTab === 'metrics' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+          >
+            Metrics
+          </button>
+        </nav>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'flex-end', paddingRight: '2rem' }}>
+          <select
+            className="form-select"
+            style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', border: '1px solid var(--border-medium)', background: 'transparent' }}
+            value={wallet.network}
+            onChange={(e) => onNetworkChange(e.target.value as MidnightNetwork)}
+          >
+            <option value="mainnet">Mainnet</option>
+            <option value="preprod">Preprod</option>
+            <option value="preview">Preview</option>
+          </select>
+
+          {wallet.connected ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span className={`badge ${wallet.isDemo ? 'badge-amber' : 'badge-mint'}`}>
+                <Wallet size={12} />
+                {wallet.is1AM ? '1AM' : wallet.isDemo ? 'DEMO' : 'CONNECTED'}
+              </span>
+              <span className="mono" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                {wallet.unshieldedAddress.slice(0, 6)}...{wallet.unshieldedAddress.slice(-4)}
+              </span>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={onDisconnectWallet}
+                title="Disconnect"
+                style={{ padding: '0.4rem' }}
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <button className="btn btn-primary btn-sm" onClick={onOpenWalletModal}>
+              <Wallet size={14} />
+              Connect Wallet
+            </button>
+          )}
+        </div>
     </header>
   );
 };
+

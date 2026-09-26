@@ -1,6 +1,6 @@
 import React from 'react';
 import { Auction } from '../domain/types';
-import { Shield, Clock, ArrowUpRight, Lock, CheckCircle } from 'lucide-react';
+import { Clock, ArrowUpRight, Lock, CheckCircle } from 'lucide-react';
 
 interface AuctionListProps {
   auctions: Auction[];
@@ -8,91 +8,113 @@ interface AuctionListProps {
 }
 
 export const AuctionList: React.FC<AuctionListProps> = ({ auctions, onSelectBid }) => {
-  const kanjiMarkers = ['壱', '弐', '参', '四', '五'];
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1.5rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-            <span className="hanko-seal">調達</span>
-            <span className="eyebrow">OFFICIAL CONFIDENTIAL TENDER REGISTRY</span>
+    <div className="brutalist-grid" style={{ width: '100vw', overflowX: 'hidden' }}>
+      
+      <div className="grid-col" style={{ gridColumn: 'span 4', borderBottom: '4px solid var(--text-primary)', padding: 0 }}>
+        <img 
+          src="/brutalist_registry_anchor.jpg" 
+          alt="Financial Registry Blueprint" 
+          style={{ width: '100%', height: '400px', objectFit: 'cover', display: 'block' }} 
+        />
+      </div>
+
+      <div className="grid-col" style={{ gridColumn: 'span 4', borderBottom: '4px solid var(--text-primary)', padding: '3rem 4vw', backgroundColor: 'var(--bg-core)' }}>
+        <span className="eyebrow" style={{ display: 'block', color: 'var(--accent-vermilion)', marginBottom: '1rem', fontWeight: 600 }}>
+          TENDER REGISTRY // FINANCIAL DESK
+        </span>
+        <h1 className="font-display" style={{ fontSize: 'clamp(3rem, 6vw, 6rem)', color: 'var(--text-primary)', margin: '0 0 1rem 0', textTransform: 'uppercase', lineHeight: 1 }}>
+          Confidential Procurement
+        </h1>
+        <p className="mono" style={{ color: 'var(--text-primary)', fontSize: 'clamp(1rem, 1.5vw, 1.5rem)', maxWidth: '80ch', fontWeight: 500, margin: 0 }}>
+          CLIENT-SIDE ZERO-KNOWLEDGE PROOFS. NEITHER COMPETING BIDDERS NOR THE PROCUREMENT DESK CAN SEE YOUR VALUATION BEFORE THE DEADLINE.
+        </p>
+      </div>
+
+      {auctions.map((auction) => (
+        <div key={auction.id} className="grid-col" style={{ 
+          gridColumn: 'span 1', 
+          borderRight: '2px solid var(--text-primary)', 
+          borderBottom: '2px solid var(--text-primary)', 
+          padding: '2rem', 
+          display: 'flex', 
+          flexDirection: 'column',
+          backgroundColor: 'var(--bg-core)'
+        }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--text-primary)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+            <span className="mono" style={{ fontSize: '1rem', fontWeight: 700 }}>
+              ID:{auction.auctionIdHex.slice(0, 8)}
+            </span>
+            <span className="mono" style={{ fontSize: '0.85rem', fontWeight: 700, color: auction.status === 'Open' ? 'var(--accent-vermilion)' : 'var(--text-primary)', border: `1px solid ${auction.status === 'Open' ? 'var(--accent-vermilion)' : 'var(--text-primary)'}`, padding: '0.25rem 0.5rem' }}>
+              {auction.status.toUpperCase()}
+            </span>
           </div>
-          <h1 className="font-mincho" style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Confidential Sealed-Bid Registry
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.98rem', maxWidth: '850px', marginTop: '0.4rem', lineHeight: 1.7 }}>
-            Every procurement lot enforces client-side zero-knowledge proofs on Midnight Network.
-            Neither competing bidders nor the procurement desk can inspect your bid valuation before the deadline.
+
+          <h3 className="font-display" style={{ fontSize: 'clamp(1.5rem, 2vw, 2.5rem)', lineHeight: 1.1, marginBottom: '1rem', textTransform: 'uppercase' }}>
+            {auction.title}
+          </h3>
+          
+          <p className="mono" style={{ fontSize: '0.9rem', marginBottom: '2.5rem', flexGrow: 1, opacity: 0.8, lineHeight: 1.5 }}>
+            {auction.description}
           </p>
-        </div>
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {auctions.map((auction, idx) => (
-          <div key={auction.id} className="card card-bracketed" style={{ padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <span className="hanko-seal hanko-seal-sm">LOT 0{idx + 1} / {kanjiMarkers[idx] || idx + 1}</span>
-                  <span className="badge badge-cobalt">{auction.category.toUpperCase()}</span>
-                  <span className={`badge ${auction.status === 'Open' ? 'badge-mint' : 'badge-amber'}`}>
-                    {auction.status === 'Open' ? 'OPEN' : 'SETTLED'}
-                  </span>
-                  <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    ID: {auction.auctionIdHex.slice(0, 10)}...{auction.auctionIdHex.slice(-6)}
-                  </span>
-                </div>
-                <h3 className="font-mincho" style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '0.01em' }}>
-                  {auction.title}
-                </h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.4rem', maxWidth: '780px', lineHeight: 1.6 }}>
-                  {auction.description}
-                </p>
-              </div>
-
-              <div style={{ textAlign: 'right' }}>
-                <div className="eyebrow">MINIMUM RESERVE</div>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }} className="mono">
-                  {auction.reservePrice.toLocaleString()} {auction.currency}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  {auction.bidsCount} sealed {auction.bidsCount === 1 ? 'bid' : 'bids'} committed
-                </div>
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.1rem', marginTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Clock size={14} />
-                  <span>Deadline: Block #{auction.biddingDeadlineBlock.toString()}</span>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Lock size={14} style={{ color: 'var(--accent-matsuba)' }} />
-                  <span>ZK Policy: <code className="mono">bidAmount &gt;= reserve</code></span>
-                </span>
-                <span className="badge badge-shu">
-                  ZERO PRICE EXPOSURE GUARANTEED
-                </span>
-              </div>
-
-              {auction.status === 'Open' ? (
-                <button className="btn btn-primary btn-sm" onClick={() => onSelectBid(auction)}>
-                  <Shield size={14} />
-                  <span>PLACE SEALED BID</span>
-                  <ArrowUpRight size={14} />
-                </button>
-              ) : (
-                <span className="badge badge-mint">
-                  <CheckCircle size={12} />
-                  <span>AUCTION SETTLED</span>
-                </span>
-              )}
+          <div style={{ background: 'var(--text-primary)', color: 'var(--bg-core)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+            <span className="eyebrow" style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--bg-core)', opacity: 0.7 }}>RESERVE AMOUNT</span>
+            <div className="mono" style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+              {auction.reservePrice.toLocaleString()} {auction.currency}
             </div>
           </div>
-        ))}
-      </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', marginBottom: '2.5rem' }} className="mono">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 600 }}>
+              <Clock size={16} /> BLK #{auction.biddingDeadlineBlock.toString()}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 600 }}>
+              <Lock size={16} /> BID &ge; RESERVE
+            </span>
+          </div>
+
+          {auction.status === 'Open' ? (
+            <button 
+              onClick={() => onSelectBid(auction)}
+              style={{
+                width: '100%',
+                padding: '1.25rem',
+                background: 'var(--accent-vermilion)',
+                color: 'var(--bg-core)',
+                border: 'none',
+                fontWeight: 700,
+                fontSize: '1rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textTransform: 'uppercase'
+              }}
+            >
+              SEAL BID <ArrowUpRight size={20} />
+            </button>
+          ) : (
+            <div style={{
+              width: '100%',
+              padding: '1.25rem',
+              background: 'transparent',
+              color: 'var(--text-primary)',
+              border: '2px solid var(--text-primary)',
+              fontWeight: 700,
+              fontSize: '1rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              textTransform: 'uppercase'
+            }}>
+              SETTLED <CheckCircle size={20} />
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

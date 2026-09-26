@@ -25,113 +25,123 @@ export const PrivacyBoundaryView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Intro */}
-      <div>
-        <span className="eyebrow">ZERO-KNOWLEDGE ARCHITECTURE</span>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0.25rem 0 0.5rem' }}>
-          Cryptographic Privacy Boundary
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '800px', fontSize: '0.95rem' }}>
-          Conventional smart contracts publish bid amounts and bidder addresses, exposing trade secrets and enabling front-running.
-          AegisBid utilizes Midnight’s <strong>Compact smart contract</strong> to evaluate bid eligibility inside zero-knowledge SNARK proofs.
-          Confidential valuations never touch the public network.
-        </p>
+    <div className="brutalist-grid" style={{ minHeight: '100vh', padding: 'var(--spacing-xl) 0' }}>
+      {/* Col 1: Title and Image */}
+      <div className="grid-col" style={{ gridColumn: 'span 1', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div>
+          <span className="eyebrow" style={{ color: 'var(--accent-vermilion)' }}>ZERO-KNOWLEDGE ARCHITECTURE</span>
+          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 4rem)', fontWeight: 900, lineHeight: 1, margin: '1rem 0' }}>
+            CRYPTOGRAPHIC<br/>PRIVACY<br/>BOUNDARY
+          </h1>
+          <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.1rem', marginTop: '1rem' }}>
+            AegisBid utilizes Midnight’s Compact smart contract to evaluate bid eligibility inside zero-knowledge SNARK proofs.
+          </p>
+        </div>
+        <div style={{ border: '2px solid var(--text-primary)', padding: '0.5rem', background: 'var(--bg-core)' }}>
+          <img 
+            src="/crypto_blueprint.jpg" 
+            alt="Cryptographic Blueprint" 
+            style={{ width: '100%', height: 'auto', display: 'block', filter: 'grayscale(100%) contrast(1.2)' }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'C:\\Users\\SUJAN\\.gemini\\antigravity\\brain\\e75c375a-44f9-450d-94fa-9e3f330a84b9\\crypto_blueprint_1790404328984.jpg';
+            }}
+          />
+        </div>
       </div>
 
-      {/* Observation Table */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Shield size={18} className="text-accent-cobalt" />
+      {/* Col 2 & 3: Observation Table */}
+      <div className="grid-col" style={{ gridColumn: 'span 2' }}>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, textTransform: 'uppercase', borderBottom: '4px solid var(--text-primary)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+          <Shield size={24} style={{ display: 'inline', marginRight: '0.5rem', color: 'var(--accent-vermilion)' }} />
           Observer Disclosure Matrix
         </h3>
-        <table className="privacy-table">
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid var(--text-primary)' }}>
           <thead>
-            <tr>
-              <th>Entity / Attribute</th>
-              <th>Network Visibility</th>
-              <th>Storage Location</th>
-              <th>Guaranteed Protection</th>
+            <tr style={{ background: 'var(--text-primary)', color: 'var(--bg-core)' }}>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 800 }}>Entity / Attribute</th>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 800 }}>Network Visibility</th>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 800 }}>Storage Location</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Exact Bid Valuation</strong></td>
-              <td><span className="badge badge-amber"><EyeOff size={12} /> CONFIDENTIAL</span></td>
-              <td>Local Client Memory Only</td>
-              <td>Evaluated in ZK; never published during bidding phase.</td>
+            <tr style={{ borderBottom: '1px solid var(--text-primary)' }}>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Exact Bid Valuation</td>
+              <td style={{ padding: '1rem', color: 'var(--accent-vermilion)', fontWeight: 800 }}><EyeOff size={16} style={{ display: 'inline' }}/> CONFIDENTIAL</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>Local Client Memory</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--text-primary)' }}>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Bidder Secret Key</td>
+              <td style={{ padding: '1rem', fontWeight: 800 }}><Lock size={16} style={{ display: 'inline' }}/> PRIVATE WITNESS</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>Browser IndexedDB</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--text-primary)' }}>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Salt Entropy</td>
+              <td style={{ padding: '1rem', fontWeight: 800 }}><Lock size={16} style={{ display: 'inline' }}/> PRIVATE WITNESS</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>Local Client Memory</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--text-primary)' }}>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Bid Commitment Hash</td>
+              <td style={{ padding: '1rem', fontWeight: 800 }}><CheckCircle size={16} style={{ display: 'inline' }}/> PUBLIC LEDGER</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>Midnight State Map</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid var(--text-primary)' }}>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Bid Nullifier</td>
+              <td style={{ padding: '1rem', fontWeight: 800 }}><CheckCircle size={16} style={{ display: 'inline' }}/> PUBLIC LEDGER</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>Midnight State Set</td>
             </tr>
             <tr>
-              <td><strong>Bidder Secret Key</strong></td>
-              <td><span className="badge badge-amber"><Lock size={12} /> PRIVATE WITNESS</span></td>
-              <td>Browser IndexedDB / Session</td>
-              <td>Generates pseudonymous commitments; never leaves device.</td>
-            </tr>
-            <tr>
-              <td><strong>Salt Entropy (32-bytes)</strong></td>
-              <td><span className="badge badge-amber"><Lock size={12} /> PRIVATE WITNESS</span></td>
-              <td>Local Client Memory</td>
-              <td>Blinds the commitment against dictionary attacks.</td>
-            </tr>
-            <tr>
-              <td><strong>Bid Commitment Hash</strong></td>
-              <td><span className="badge badge-mint"><CheckCircle size={12} /> PUBLIC LEDGER</span></td>
-              <td>Midnight State Map</td>
-              <td>Unforgeable cryptographic anchor verifying compliance.</td>
-            </tr>
-            <tr>
-              <td><strong>Bid Nullifier</strong></td>
-              <td><span className="badge badge-mint"><CheckCircle size={12} /> PUBLIC LEDGER</span></td>
-              <td>Midnight State Set</td>
-              <td>Prevents multiple bids per secret identity without revealing identity.</td>
-            </tr>
-            <tr>
-              <td><strong>Reserve Compliance</strong></td>
-              <td><span className="badge badge-mint"><CheckCircle size={12} /> PROVEN IN CIRCUIT</span></td>
-              <td>ZK SNARK Verification</td>
-              <td>Mathematical proof that bid &gt;= reserve threshold.</td>
+              <td style={{ padding: '1rem', fontWeight: 700 }}>Reserve Compliance</td>
+              <td style={{ padding: '1rem', fontWeight: 800 }}><CheckCircle size={16} style={{ display: 'inline' }}/> PROVEN IN CIRCUIT</td>
+              <td style={{ padding: '1rem', fontFamily: 'monospace' }}>ZK SNARK</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Local Private State Manager */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Key size={18} className="text-accent-cobalt" />
-              Local Private State (Isolated on this Device)
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Ephemeral secret identities used to generate unshielded nullifiers and sealed commitments.
-            </p>
-          </div>
-          <button className="btn btn-secondary btn-sm" onClick={handleRotate}>
-            <RefreshCw size={13} />
-            ROTATE IDENTITY SECRET
+      {/* Col 4: Local Private State Manager */}
+      <div className="grid-col" style={{ gridColumn: 'span 1' }}>
+        <div style={{ border: '4px solid var(--text-primary)', padding: '1.5rem', height: '100%', background: 'var(--bg-core)' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <Key size={20} style={{ display: 'inline', marginRight: '0.5rem', color: 'var(--accent-vermilion)' }} />
+            Client-Side Enclave
+          </h3>
+          <p style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '2rem' }}>
+            Ephemeral secret identities isolated on this device.
+          </p>
+          
+          <button 
+            onClick={handleRotate}
+            style={{ width: '100%', padding: '1rem', background: 'var(--text-primary)', color: 'var(--bg-core)', fontWeight: 800, border: 'none', cursor: 'pointer', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          >
+            <RefreshCw size={16} /> ROTATE IDENTITY
           </button>
-        </div>
 
-        {currentIdentity && (
-          <div style={{ background: 'var(--bg-elevated)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div>
-              <span className="eyebrow">ACTIVE EPHEMERAL SECRET (NEVER TRANSMITTED)</span>
-              <div className="mono" style={{ fontSize: '0.8rem', color: 'var(--accent-amber)', wordBreak: 'break-all' }}>
-                {currentIdentity.secretHex}
+          {currentIdentity && (
+            <div style={{ borderTop: '2px dashed var(--text-primary)', paddingTop: '1.5rem' }}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-vermilion)', marginBottom: '0.5rem' }}>
+                  ACTIVE EPHEMERAL SECRET
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all', background: '#e0e0e0', padding: '0.5rem', border: '1px solid var(--text-primary)' }}>
+                  {currentIdentity.secretHex}
+                </div>
+              </div>
+              
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  DERIVED PUBLIC IDENTITY
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all', background: '#e0e0e0', padding: '0.5rem', border: '1px solid var(--text-primary)' }}>
+                  {currentIdentity.derivedIdentityHex}
+                </div>
+              </div>
+              
+              <div style={{ marginTop: '2rem', fontSize: '0.85rem', fontWeight: 700, textAlign: 'right' }}>
+                STORED IDENTITIES: {identities.length}
               </div>
             </div>
-            <div>
-              <span className="eyebrow">DERIVED PUBLIC IDENTITY (SHIELDED DOMAIN)</span>
-              <div className="mono" style={{ fontSize: '0.8rem', color: 'var(--accent-mint)', wordBreak: 'break-all' }}>
-                {currentIdentity.derivedIdentityHex}
-              </div>
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Total identities stored in local browser vault: {identities.length}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

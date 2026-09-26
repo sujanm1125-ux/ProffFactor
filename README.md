@@ -180,3 +180,20 @@ To enable the AI Procurement Architect with live Google GenAI:
 ## 10. License
 
 Apache-2.0. Built for the Midnight Privacy Network.
+
+## Privacy Model
+
+AegisBid leverages the Midnight network's zero-knowledge capabilities to ensure maximum privacy.
+
+**What an observer CAN learn:**
+- The fact that an auction exists and its public parameters (reserve price, deadline, category).
+- The number of bids submitted.
+- The cryptographic proof that a bid was processed.
+- When an auction is finalized, the total cleared amount.
+
+**What an observer CANNOT learn:**
+- The exact bid amount of any participant.
+- The identity of the bidder (protected via Pedersen commitments and zero-knowledge proofs).
+- Whether a specific bidder met the reserve price (they only see a valid proof of execution).
+- The private keys or entropy used to formulate the bid.
+

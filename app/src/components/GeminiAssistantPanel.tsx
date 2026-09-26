@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Shield, Send, CheckCircle, HelpCircle } from 'lucide-react';
+import { Sparkles, Terminal } from 'lucide-react';
 import { GeminiPlan } from '../domain/types';
 import { requestAssistantPlan } from '../lib/api/backendClient';
 
@@ -22,115 +22,189 @@ export const GeminiAssistantPanel: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <span className="eyebrow">AI PROOF PLANNER</span>
-          <span className="badge badge-cobalt">STRICT PRIVACY BOUNDARY ENFORCED</span>
+    <div style={{
+      width: '100vw',
+      minHeight: '100vh',
+      backgroundColor: 'var(--text-primary, #0a0a0a)',
+      color: 'var(--bg-core, #f4f4f0)',
+      fontFamily: 'monospace',
+      padding: '2rem',
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
+    }}>
+      <div className="brutalist-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', maxWidth: '100%' }}>
+        
+        {/* Header / Brand Section - Col 1 */}
+        <div className="grid-col" style={{ gridColumn: 'span 1', borderRight: '2px solid var(--accent-vermilion, #ff3300)', paddingRight: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--accent-vermilion, #ff3300)' }}>
+            <Terminal size={32} />
+            <h1 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.05em', margin: 0 }}>Gemini<br/>Terminal</h1>
+          </div>
+          <div style={{ padding: '0.5rem', border: '1px solid var(--accent-vermilion, #ff3300)', marginBottom: '2rem' }}>
+             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-vermilion, #ff3300)', fontWeight: 'bold' }}>System Status</span>
+             <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>STRICT PRIVACY BOUNDARY ENFORCED</div>
+          </div>
+          <p style={{ fontSize: '0.85rem', lineHeight: '1.4', opacity: 0.8 }}>
+            Convert natural language procurement specs into formal Compact ZK proof plans.
+            <br/><br/>
+            <strong>PRIVACY GUARANTEE:</strong> Runs strictly on sanitized public requirements. No private keys, seeds, or valuations are submitted.
+          </p>
+          <div style={{ marginTop: '2rem' }}>
+            <img src="/gemini_architect_blueprint.jpg" alt="Architect Blueprint" style={{ width: '100%', height: 'auto', border: '1px solid var(--accent-vermilion, #ff3300)', filter: 'grayscale(100%) contrast(1.2)' }} />
+          </div>
         </div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Gemini Procurement Architect</h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '800px', fontSize: '0.95rem' }}>
-          Convert natural language procurement specifications into formal Compact zero-knowledge proof plans.
-          <strong> Privacy Guarantee:</strong> Gemini runs strictly on sanitized public requirements.
-          Private keys, seed phrases, exact bidder valuations, and salts are never submitted to the AI model.
-        </p>
-      </div>
 
-      <form className="card" onSubmit={handleGenerate}>
-        <div className="form-group">
-          <label className="form-label">Public RFP / Auction Description (Zero confidential data)</label>
-          <textarea
-            className="form-textarea"
-            rows={3}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe public tender or liquidation requirements..."
-            required
-          />
-        </div>
+        {/* Input Form Section - Col 2 & 3 */}
+        <div className="grid-col" style={{ gridColumn: 'span 2' }}>
+          <form onSubmit={handleGenerate} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--accent-vermilion, #ff3300)' }}>
+                &gt; Public RFP / Auction Description
+              </label>
+              <textarea
+                rows={6}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe public tender..."
+                required
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'inherit',
+                  border: '1px solid rgba(244,244,240,0.3)',
+                  padding: '1rem',
+                  fontFamily: 'monospace',
+                  fontSize: '1rem',
+                  resize: 'vertical',
+                  outline: 'none'
+                }}
+              />
+            </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div className="form-group">
-            <label className="form-label">Category</label>
-            <select
-              className="form-select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'rgba(244,244,240,0.7)' }}>Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  style={{
+                    backgroundColor: 'rgba(244,244,240,0.1)',
+                    color: 'inherit',
+                    border: 'none',
+                    padding: '0.75rem',
+                    fontFamily: 'monospace',
+                    outline: 'none'
+                  }}
+                >
+                  <option value="procurement" style={{ color: '#000' }}>Gov / Enterprise Procurement</option>
+                  <option value="liquidation" style={{ color: '#000' }}>Confidential Asset Liquidation</option>
+                  <option value="otc-block" style={{ color: '#000' }}>OTC Block Trade Auction</option>
+                  <option value="spectrum-license" style={{ color: '#000' }}>Frequency / Spectrum License</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'rgba(244,244,240,0.7)' }}>Min Reserve Threshold (tDUST)</label>
+                <input
+                  type="number"
+                  value={reserve}
+                  onChange={(e) => setReserve(Number(e.target.value))}
+                  min={1000}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: 'var(--accent-vermilion, #ff3300)',
+                    border: '1px solid rgba(244,244,240,0.3)',
+                    padding: '0.75rem',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading} 
+              style={{
+                marginTop: 'auto',
+                backgroundColor: 'var(--accent-vermilion, #ff3300)',
+                color: '#000',
+                border: 'none',
+                padding: '1rem',
+                fontSize: '1.1rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                cursor: loading ? 'wait' : 'pointer',
+                fontFamily: 'monospace'
+              }}
             >
-              <option value="procurement">Government / Enterprise Procurement</option>
-              <option value="liquidation">Confidential Asset Liquidation</option>
-              <option value="otc-block">OTC Block Trade Auction</option>
-              <option value="spectrum-license">Frequency / Spectrum License</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Minimum Reserve Threshold (tDUST)</label>
-            <input
-              type="number"
-              className="form-input"
-              value={reserve}
-              onChange={(e) => setReserve(Number(e.target.value))}
-              min={1000}
-            />
-          </div>
+              <Sparkles size={20} />
+              {loading ? 'EXECUTING GENERATION...' : 'COMPILE PROOF PLAN'}
+            </button>
+          </form>
         </div>
 
-        <button type="submit" className="btn btn-primary" disabled={loading} style={{ alignSelf: 'flex-start' }}>
-          <Sparkles size={16} />
-          {loading ? 'GENERATING PROOF PLAN...' : 'GENERATE ZK PROOF PLAN'}
-        </button>
-      </form>
+        {/* Output Section - Col 4 */}
+        <div className="grid-col" style={{ gridColumn: 'span 1', borderLeft: '1px dotted rgba(244,244,240,0.3)', paddingLeft: '1rem', display: 'flex', flexDirection: 'column' }}>
+          {!plan ? (
+            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'rgba(244,244,240,0.3)', textAlign: 'center' }}>
+              <div>
+                <Terminal size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+                <p style={{ textTransform: 'uppercase', fontSize: '0.85rem' }}>AWAITING INPUT...<br/>SYSTEM IDLE</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-vermilion, #ff3300)', marginBottom: '0.25rem' }}>OUTPUT // PROOF PLAN</div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 1rem 0' }}>{plan.recommendedTitle}</h2>
+                {plan.fallbackUsed && (
+                  <div style={{ display: 'inline-block', backgroundColor: 'var(--accent-vermilion, #ff3300)', color: '#000', padding: '0.25rem 0.5rem', fontSize: '0.7rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                    DETERMINISTIC FALLBACK
+                  </div>
+                )}
+                
+                <div style={{ backgroundColor: 'rgba(244,244,240,0.05)', padding: '1rem', border: '1px solid rgba(244,244,240,0.2)' }}>
+                  <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.5rem' }}>EXECUTION SUMMARY</div>
+                  <p style={{ fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>{plan.proofPlanSummary}</p>
+                </div>
+              </div>
 
-      {plan && (
-        <div className="card" style={{ borderLeft: '4px solid var(--accent-cobalt)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span className="eyebrow">STRUCTURED PROOF PLAN</span>
-            {plan.fallbackUsed && (
-              <span className="badge badge-amber">DETERMINISTIC FALLBACK ENGINE</span>
-            )}
-          </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{plan.recommendedTitle}</h2>
+              <div>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-vermilion, #ff3300)', marginBottom: '0.5rem' }}>DISCLOSURE SCOPE</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {plan.privacyAnalysis.map((item, idx) => (
+                    <div key={idx} style={{ borderBottom: '1px solid rgba(244,244,240,0.1)', paddingBottom: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{item.field_name}</span>
+                        <span style={{ 
+                          fontSize: '0.7rem', 
+                          padding: '0.1rem 0.3rem', 
+                          backgroundColor: item.visibility === 'PRIVATE' ? 'var(--accent-vermilion, #ff3300)' : 'rgba(244,244,240,0.2)',
+                          color: item.visibility === 'PRIVATE' ? '#000' : 'inherit'
+                        }}>
+                          {item.visibility}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: '0.25rem' }}>{item.storage_location}</div>
+                      <div style={{ fontSize: '0.75rem' }}>{item.zk_justification}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <div style={{ background: 'var(--bg-elevated)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-            <span className="eyebrow">PROTOCOL EXECUTION SUMMARY</span>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '0.35rem' }}>
-              {plan.proofPlanSummary}
-            </p>
-          </div>
-
-          <div>
-            <span className="eyebrow">DISCLOSURE SCOPE ANALYSIS</span>
-            <table className="privacy-table">
-              <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>Visibility</th>
-                  <th>Storage</th>
-                  <th>Justification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plan.privacyAnalysis.map((item, idx) => (
-                  <tr key={idx}>
-                    <td className="mono">{item.field_name}</td>
-                    <td>
-                      <span className={`badge ${item.visibility === 'PRIVATE' ? 'badge-amber' : 'badge-mint'}`}>
-                        {item.visibility}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.storage_location}</td>
-                    <td style={{ fontSize: '0.8rem' }}>{item.zk_justification}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
-            <strong>Compliance Note:</strong> {plan.complianceNotes}
-          </div>
+              <div style={{ fontSize: '0.75rem', opacity: 0.6, borderTop: '1px solid rgba(244,244,240,0.2)', paddingTop: '1rem' }}>
+                <strong style={{ color: 'var(--accent-vermilion, #ff3300)' }}>SYS_NOTE:</strong> {plan.complianceNotes}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+      </div>
     </div>
   );
 };

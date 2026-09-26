@@ -53,6 +53,6 @@ describe('Midnight Wallet Connector Tests', () => {
   it('initial state is disconnected on preprod network', () => {
     const initial = getInitialWalletState();
     expect(initial.connected).toBe(false);
-    expect(initial.network).toBe('preprod');
+    expect(initial.network).toBe('mainnet');
   });
 });

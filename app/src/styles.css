@@ -1,43 +1,44 @@
-/* AegisBid Design System: Japanese Editorial Direction & Bidder Sanctuary (和のエディトリアル設計) */
+/* AegisBid — High-End Japanese Editorial Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap');
+
 :root {
-  --bg-core: #090B0E;              /* 墨色 Sumi Ink */
-  --bg-surface: #10141C;           /* 和紙調スレート Washi Slate */
-  --bg-elevated: #161D27;          /* 高床 Washi Elevated */
-  --bg-highlight: #1F2837;         /* 浮彫 Washi Highlight */
+  /* Editorial Print Palette */
+  --bg-core: #F9F8F6;          /* Washi Paper / Warm Off-White */
+  --bg-surface: #FFFFFF;       /* Pure White for elevated cards */
+  --bg-elevated: #F3F1ED;      /* Slightly darker paper for contrast */
+  --bg-highlight: #EAE7E0;     /* Active states */
+
+  /* Ink Colors */
+  --text-primary: #1A1A1A;     /* Sumi Ink / Deep Charcoal */
+  --text-secondary: #5C5C5C;   /* Graphite / Medium Gray */
+  --text-muted: #8F8F8F;       /* Light Gray */
+
+  /* Subtle Borders for Grid lines */
+  --border-subtle: #E5E3DB;
+  --border-medium: #D1CEC5;
+  --border-strong: #1A1A1A;    /* Heavy editorial rules */
+
+  /* Accents */
+  --accent-vermilion: #D9381E; /* Traditional Japanese Red (Shu) */
+  --accent-ink: #1A1A1A;
   
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.16);
-  --border-active: #D63F28;        /* 朱色 Vermilion Cinnabar */
-  
-  --text-primary: #F7F5F0;         /* 薄生成り Warm Parchment White */
-  --text-secondary: #9EA8B6;       /* 灰青 Slate Hai-iro */
-  --text-muted: #646F80;           /* 薄墨 Muted Sumi */
-  
-  --accent-shu: #D63F28;           /* 朱色 Vermilion Cinnabar */
-  --accent-shu-hover: #E84E38;
-  --accent-ai: #2B6CB0;            /* 藍色 Deep Indigo */
-  --accent-matsuba: #10B981;       /* 松葉色 Pine Green (ZK Proven) */
-  --accent-yamabuki: #D97706;      /* 山吹色 Amber Ochre */
-  --accent-danger: #E53E3E;
-  
-  /* Backward-compatible aliases */
-  --accent-cobalt: #2B6CB0;
-  --accent-cobalt-hover: #3B82F6;
-  --accent-mint: #10B981;
-  --accent-amber: #D97706;
-  
-  --font-serif: 'Shippori Mincho', 'Noto Serif JP', 'Songti SC', Georgia, serif;
-  --font-sans: 'Zen Kaku Gothic New', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
-  
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-full: 9999px;
-  
-  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Financial States */
+  --status-success: #2E7D32;
+  --status-warning: #ED6C02;
+  --status-danger: #D32F2F;
+
+  /* Typography */
+  --font-display: 'Shippori Mincho', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Geometry */
+  --radius-xs: 0px;            /* Sharp corners for print aesthetic */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  --transition-fast: 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after {
@@ -50,276 +51,135 @@ body {
   background-color: var(--bg-core);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  /* Subtle paper texture overlay could go here */
 }
 
 /* Typography Helpers */
-.font-mincho {
-  font-family: var(--font-serif);
-}
-
-.font-gothic {
-  font-family: var(--font-sans);
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .mono {
   font-family: var(--font-mono);
+  font-size: 0.9em;
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
-/* App Container */
+/* App Container (True Full Bleed Grid) */
 .app-container {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 5rem;
+  width: 100vw;
+  min-height: 100vh;
+  background: var(--bg-core);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header */
+.brutalist-grid {
+  display: grid;
+  /* 4 equal fluid columns that stretch to fill 100vw */
+  grid-template-columns: repeat(4, 1fr);
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+.grid-col {
+  border-right: 2px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+}
+.grid-col:last-child {
+  border-right: none;
+}
+
+/* Full-bleed imagery */
+.editorial-img-container {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.editorial-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Content styling */
+.content-panel {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header (Editorial Masthead) */
 .header-bar {
+  border-bottom: 2px solid var(--border-strong); /* Thick editorial rule */
+}
+
+.header-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+}
+
+.header-grid > div, .header-grid > nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 1.25rem;
-  margin-bottom: 2.25rem;
-  gap: 1.25rem;
-  flex-wrap: wrap;
+  padding: 1.25rem 2rem;
+  border-right: 1px solid var(--border-strong);
+}
+.header-grid > div:last-child {
+  border-right: none;
 }
 
 .brand-section {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: baseline;
+  gap: 1.5rem;
 }
 
 .brand-logo {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .brand-tag {
-  background: rgba(214, 63, 40, 0.12);
-  color: var(--accent-shu);
-  border: 1px solid rgba(214, 63, 40, 0.35);
-  font-size: 0.65rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-xs);
-  font-family: var(--font-mono);
-  letter-spacing: 0.08em;
-}
-
-.nav-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Japanese Hanko Seal (印鑑 / 密印 / 済) */
-.hanko-seal {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid var(--accent-shu);
-  color: var(--accent-shu);
-  background: rgba(214, 63, 40, 0.08);
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 0.75rem;
-  line-height: 1;
-  padding: 0.25rem 0.45rem;
-  border-radius: var(--radius-xs);
-  letter-spacing: 0.1em;
-  transform: rotate(-1.5deg);
-  box-shadow: inset 0 0 4px rgba(214, 63, 40, 0.15);
-  user-select: none;
-}
-
-.hanko-seal-sm {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.35rem;
-}
-
-/* Kanji Step Numbering (壱・弐・参・四) */
-.kanji-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
-  background: rgba(214, 63, 40, 0.15);
-  color: var(--accent-shu);
-  border: 1px solid rgba(214, 63, 40, 0.4);
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 0.9rem;
-  border-radius: var(--radius-xs);
-  flex-shrink: 0;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.55rem 1.1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--accent-shu);
-  outline-offset: 2px;
-}
-
-.btn-primary {
-  background: var(--accent-shu);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.15);
-}
-.btn-primary:hover {
-  background: var(--accent-shu-hover);
-  box-shadow: 0 4px 14px rgba(214, 63, 40, 0.3);
-}
-
-.btn-secondary {
-  background: var(--bg-elevated);
-  border-color: var(--border-subtle);
-  color: var(--text-primary);
-}
-.btn-secondary:hover {
-  background: var(--bg-highlight);
-  border-color: var(--border-medium);
-}
-
-.btn-danger {
-  background: rgba(229, 62, 62, 0.15);
-  border-color: rgba(229, 62, 62, 0.3);
-  color: var(--accent-danger);
-}
-.btn-danger:hover {
-  background: rgba(229, 62, 62, 0.25);
-}
-
-.btn-sm {
-  padding: 0.3rem 0.75rem;
-  font-size: 0.75rem;
-}
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
   font-size: 0.7rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-xs);
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
 }
 
-.badge-mint {
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--accent-matsuba);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-amber {
-  background: rgba(217, 119, 6, 0.12);
-  color: var(--accent-yamabuki);
-  border: 1px solid rgba(217, 119, 6, 0.3);
-}
-
-.badge-cobalt {
-  background: rgba(43, 108, 176, 0.15);
-  color: #63B3ED;
-  border: 1px solid rgba(43, 108, 176, 0.35);
-}
-
-.badge-shu {
-  background: rgba(214, 63, 40, 0.12);
-  color: var(--accent-shu);
-  border: 1px solid rgba(214, 63, 40, 0.35);
-}
-
-/* Cards & Grid */
-.grid-cols-3 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  transition: all var(--transition-fast);
-  position: relative;
-}
-
-.card:hover {
-  border-color: var(--border-medium);
-}
-
-/* Japanese Corner Registration Brackets (「 」) */
-.card-bracketed {
-  position: relative;
-}
-.card-bracketed::before {
-  content: '「';
-  position: absolute;
-  top: 0.4rem;
-  left: 0.5rem;
-  font-family: var(--font-serif);
-  color: rgba(255, 255, 255, 0.2);
-  font-size: 0.9rem;
-  line-height: 1;
-}
-.card-bracketed::after {
-  content: '」';
-  position: absolute;
-  bottom: 0.4rem;
-  right: 0.5rem;
-  font-family: var(--font-serif);
-  color: rgba(255, 255, 255, 0.2);
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-/* Tabs */
+/* Navigation Tabs */
 .tabs-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
   border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 1.75rem;
-  overflow-x: auto;
 }
 
 .tab-btn {
@@ -328,16 +188,14 @@ body {
   border-bottom: 2px solid transparent;
   color: var(--text-secondary);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  padding: 0.75rem 1.1rem;
+  padding: 0.75rem 0;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   transition: all var(--transition-fast);
-  letter-spacing: 0.03em;
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: -1px;
 }
 
 .tab-btn:hover {
@@ -346,121 +204,158 @@ body {
 
 .tab-btn.active {
   color: var(--text-primary);
-  border-bottom-color: var(--accent-shu);
+  border-bottom-color: var(--accent-vermilion);
+}
+
+/* Buttons (Sharp, Solid, Print-like) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-core);
+  border: 1px solid var(--text-primary);
+}
+.btn-primary:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+}
+.btn-secondary:hover {
+  border-color: var(--text-primary);
+  background: var(--bg-surface);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+}
+
+/* Grids and Cards (Wireframe / Print Grid style) */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 2rem;
+  transition: border-color var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-medium);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-core);
+  color: var(--text-primary);
+}
+
+.badge-mint {
+  border-color: var(--status-success);
+  color: var(--status-success);
+}
+.badge-amber {
+  border-color: var(--status-warning);
+  color: var(--status-warning);
+}
+.badge-shu {
+  border-color: var(--accent-vermilion);
+  color: var(--accent-vermilion);
+}
+
+/* Forms */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input, .form-select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: var(--text-primary);
 }
 
 /* Modals */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 7, 10, 0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(25, 25, 25, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1.25rem;
+  padding: 2rem;
 }
 
 .modal-content {
-  background: var(--bg-surface);
+  background: var(--bg-core);
   border: 1px solid var(--border-medium);
-  border-radius: var(--radius-lg);
-  max-width: 640px;
+  border-radius: var(--radius-xs);
+  max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 2.25rem;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.75);
-  position: relative;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-/* Form inputs */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
+/* Highlight Text */
+.text-vermilion {
+  color: var(--accent-vermilion);
 }
 
-.form-label {
-  font-size: 0.8rem;
-  font-family: var(--font-mono);
-  color: var(--text-secondary);
-  letter-spacing: 0.02em;
-}
-
-.form-input, .form-textarea, .form-select {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
-  font-size: 0.9rem;
-  font-family: var(--font-sans);
-  outline: none;
-  transition: border-color var(--transition-fast);
-}
-
-.form-input:focus, .form-textarea:focus, .form-select:focus {
-  border-color: var(--accent-shu);
-}
-
-/* Privacy Boundary Matrix */
-.privacy-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  margin: 1rem 0;
-}
-
-.privacy-table th, .privacy-table td {
-  padding: 0.85rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.privacy-table th {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-/* Bidder Reassurance Sanctuary Box */
-.bidder-sanctuary-box {
-  background: linear-gradient(135deg, rgba(43, 108, 176, 0.1) 0%, rgba(16, 20, 28, 0.95) 100%);
-  border: 1px solid rgba(43, 108, 176, 0.25);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Sealing Certificate Frame (封緘証書) */
-.certificate-frame {
-  border: 2px solid rgba(214, 63, 40, 0.35);
-  padding: 1.5rem;
-  background: rgba(16, 20, 28, 0.6);
-  position: relative;
-  border-radius: var(--radius-sm);
-}
-.certificate-frame::before {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  pointer-events: none;
-}
-
-/* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
   }
 }

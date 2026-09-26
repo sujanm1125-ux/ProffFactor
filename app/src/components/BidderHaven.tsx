@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, Key, Download, CheckCircle, Calculator, AlertCircle, Eye, EyeOff, FileText, ArrowRight } from 'lucide-react';
+import { Key, Download, Calculator, Eye, EyeOff, FileText, ArrowRight } from 'lucide-react';
 import { Auction, FinalizedReceipt, WalletState } from '../domain/types';
 import { getOrCreateDefaultIdentity, LocalBidderSecret, computeClientCommitment } from '../domain/privateState';
 
@@ -34,7 +34,6 @@ export const BidderHaven: React.FC<BidderHavenProps> = ({
   const isCompliant = selectedSimAuction ? simValuation >= reserveThreshold : false;
   const deltaFromReserve = selectedSimAuction ? simValuation - reserveThreshold : 0n;
 
-  // Real-time calculation of simulated commitment without network request
   useEffect(() => {
     if (identity && selectedSimAuction && simValuation > 0n) {
       computeClientCommitment(
@@ -52,217 +51,182 @@ export const BidderHaven: React.FC<BidderHavenProps> = ({
       bidderIdentityHex: identity?.derivedIdentityHex,
       network: wallet.network,
       receipts: recentReceipts,
-      note: 'AegisBid Sovereign Nonce & Sealing Receipt Vault',
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `aegisbid-bidder-vault-${Date.now()}.json`;
+    a.download = `aegisbid-vault-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Editorial Header / Bidder Manifesto */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1.75rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-            <span className="hanko-seal">秘匿</span>
-            <span className="eyebrow">BIDDER SANCTUARY &bull; SOVEREIGN KEY VAULT</span>
+    <div className="brutalist-grid" style={{ width: '100vw', padding: '0', margin: '0' }}>
+      
+      {/* Left: Active Bidding Terminal */}
+      <div className="grid-col" style={{ gridColumn: 'span 2', padding: '4rem', display: 'flex', flexDirection: 'column', gap: '3rem', borderRight: '2px solid var(--border-strong)', backgroundColor: 'var(--bg-core)' }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '2rem', borderBottom: '2px solid var(--border-strong)', paddingBottom: '1.5rem' }}>
+          <div>
+            <span className="eyebrow" style={{ display: 'block', marginBottom: '1rem', color: 'var(--accent-vermilion)' }}>
+              TERMINAL // 01
+            </span>
+            <h1 className="font-display" style={{ fontSize: 'clamp(3rem, 5vw, 6rem)', color: 'var(--text-primary)', lineHeight: 0.9, textTransform: 'uppercase' }}>
+              Active<br />Bidding<br />Terminal
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginTop: '2rem', maxWidth: '80%' }}>
+              Cryptographic keys and valuations secured in local memory. Model margins offline.
+            </p>
           </div>
-          <h1 className="font-mincho" style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Bidder Haven &amp; Sovereign Vault <span style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ 入札者の私室</span>
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.98rem', maxWidth: '820px', marginTop: '0.5rem', lineHeight: 1.7 }}>
-            Equitable procurement begins with vendor dignity and margin secrecy. In AegisBid, your target valuations
-            remain strictly inside your physical machine. Midnight zero-knowledge circuits attest to your qualifications
-            without handing over your trade secrets.
-          </p>
+          <button className="btn btn-secondary" onClick={handleExportBackup} title="Export vault" style={{ borderColor: 'var(--accent-vermilion)', color: 'var(--accent-vermilion)' }}>
+            <Download size={16} />
+            Export Vault
+          </button>
         </div>
 
-        <button className="btn btn-secondary" onClick={handleExportBackup} title="Export cryptographic receipts and nonces">
-          <Download size={15} />
-          <span>EXPORT VAULT (.JSON)</span>
-        </button>
-      </div>
-
-      {/* Grid: Keystore Status & Privacy Reassurance */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
-        {/* Local Keystore Sanctuary */}
-        <div className="card card-bracketed" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Key size={18} style={{ color: 'var(--accent-shu)' }} />
-              <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1.15rem' }}>Local Key Enclave</span>
-            </div>
-            <span className="badge badge-shu">LOCAL MEMORY ONLY</span>
+        {/* Local Key Identity */}
+        <div style={{ border: '2px solid var(--text-primary)', padding: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 className="font-display" style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', textTransform: 'uppercase' }}>
+              <Key size={24} /> Key Identity
+            </h2>
+            <span className="badge" style={{ backgroundColor: 'var(--accent-vermilion)', color: '#fff' }}>LOCAL ONLY</span>
           </div>
 
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', margin: '0.5rem 0', lineHeight: 1.6 }}>
-            The secret keys used to blind and sign your bids never leave your local browser storage (IndexedDB). No cloud or operator can access them.
-          </p>
-
-          <div style={{ background: 'var(--bg-core)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ borderTop: '2px solid var(--border-strong)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">DERIVED BIDDER IDENTITY:</div>
-              <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-cobalt)', wordBreak: 'break-all' }}>
-                {identity?.derivedIdentityHex || 'Generating local identity...'}
+              <span className="eyebrow">DERIVED PUBLIC IDENTITY</span>
+              <div className="mono" style={{ marginTop: '0.5rem', wordBreak: 'break-all', fontSize: '1.1rem', backgroundColor: '#000', color: '#fff', padding: '1rem' }}>
+                {identity?.derivedIdentityHex || 'Generating...'}
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">LOCAL SECRET SEED:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="eyebrow">SECRET ENTROPY SEED</span>
                 <button
                   onClick={() => setShowSecret(!showSecret)}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  className="eyebrow"
                 >
-                  {showSecret ? <EyeOff size={12} /> : <Eye size={12} />}
-                  {showSecret ? 'Hide' : 'Reveal'}
+                  {showSecret ? <><EyeOff size={14} /> HIDE</> : <><Eye size={14} /> REVEAL</>}
                 </button>
               </div>
-              <div className="mono" style={{ fontSize: '0.75rem', color: showSecret ? 'var(--accent-shu)' : 'var(--text-muted)', wordBreak: 'break-all' }}>
-                {showSecret ? identity?.secretHex : '••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••'}
+              <div className="mono" style={{ color: showSecret ? 'var(--accent-vermilion)' : 'var(--text-muted)', wordBreak: 'break-all', fontSize: '1.1rem', border: '1px dashed var(--text-primary)', padding: '1rem' }}>
+                {showSecret ? identity?.secretHex : '••••••••••••••••••••••••••••••••••••••••••••••••'}
               </div>
             </div>
-          </div>
-
-          <div style={{ fontSize: '0.78rem', color: 'var(--accent-matsuba)', display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.25rem' }}>
-            <CheckCircle size={14} />
-            <span>Schnorr &amp; Pedersen keypairs operational (Zero cloud leakage)</span>
           </div>
         </div>
 
-        {/* Confidential Margin Simulator */}
-        <div className="card card-bracketed" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Calculator size={18} style={{ color: 'var(--accent-cobalt)' }} />
-              <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1.15rem' }}>Confidential Margin Simulator</span>
-            </div>
-            <span className="badge badge-mint">OFFLINE SIMULATION</span>
+        {/* Offline Margin Simulator */}
+        <div style={{ border: '2px solid var(--text-primary)', padding: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 className="font-display" style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', textTransform: 'uppercase' }}>
+              <Calculator size={24} /> Simulator
+            </h2>
+            <span className="badge" style={{ backgroundColor: '#000', color: '#fff' }}>OFFLINE CIRCUIT</span>
           </div>
 
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', margin: '0.5rem 0', lineHeight: 1.6 }}>
-            Model pricing headroom and commitment generation offline without emitting any network packets.
-          </p>
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label className="form-label" style={{ fontSize: '1rem', textTransform: 'uppercase' }}>Target Procurement Lot</label>
+            <select
+              className="form-select"
+              value={simAuctionId}
+              onChange={(e) => setSimAuctionId(e.target.value)}
+              style={{ fontSize: '1.2rem', padding: '1rem', border: '2px solid #000', borderRadius: '0' }}
+            >
+              {auctions.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.title} (Res: {a.reservePrice.toLocaleString()} {a.currency})
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">Target Tender Lot</label>
-              <select
-                className="form-select"
-                value={simAuctionId}
-                onChange={(e) => setSimAuctionId(e.target.value)}
-                style={{ fontSize: '0.85rem' }}
-              >
-                {auctions.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.title} (Reserve: {a.reservePrice.toLocaleString()} {a.currency})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="form-group">
+            <label className="form-label" style={{ fontSize: '1rem', textTransform: 'uppercase' }}>Simulated Valuation ({selectedSimAuction?.currency})</label>
+            <input
+              type="number"
+              className="form-input"
+              value={simAmount}
+              onChange={(e) => setSimAmount(e.target.value)}
+              style={{ fontSize: '1.5rem', padding: '1rem', border: '2px solid #000', borderRadius: '0', width: '100%' }}
+            />
+          </div>
 
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">Simulated Valuation ({selectedSimAuction?.currency})</label>
-              <input
-                type="number"
-                className="form-input"
-                value={simAmount}
-                onChange={(e) => setSimAmount(e.target.value)}
-                style={{ fontSize: '0.85rem' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-core)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '0.82rem' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Variance from Reserve:</span>
-              <strong className="mono" style={{ color: isCompliant ? 'var(--accent-matsuba)' : 'var(--accent-danger)' }}>
-                {deltaFromReserve >= 0n ? `+${deltaFromReserve.toLocaleString()}` : deltaFromReserve.toLocaleString()} {selectedSimAuction?.currency}
-                {isCompliant ? ' (Compliant)' : ' (Below Reserve)'}
-              </strong>
-            </div>
+          <div style={{ 
+            marginTop: '2rem', 
+            paddingTop: '1.5rem', 
+            borderTop: '2px solid #000',
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: isCompliant ? '#000' : 'var(--accent-vermilion)',
+            color: '#fff',
+            padding: '1rem'
+          }}>
+            <span className="eyebrow" style={{ color: '#fff' }}>VARIANCE</span>
+            <strong className="mono" style={{ fontSize: '1.5rem' }}>
+              {deltaFromReserve >= 0n ? `+${deltaFromReserve.toLocaleString()}` : deltaFromReserve.toLocaleString()} 
+              {isCompliant ? ' [PASS]' : ' [FAIL]'}
+            </strong>
           </div>
         </div>
       </div>
 
-      {/* Active Sealed Bids Ledger */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span className="eyebrow">SUBMISSION AUDIT &amp; CERTIFICATES</span>
-            <h2 className="font-mincho" style={{ fontSize: '1.4rem', fontWeight: 700 }}>
-              Sealed Submissions Ledger <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 400 }}>/ 封緘台帳</span>
-            </h2>
-          </div>
-          <span className="badge badge-shu">
-            {recentReceipts.length} SEALED SUBMISSIONS RECORDED
-          </span>
-        </div>
+      {/* Right: Receipt Ledger */}
+      <div className="grid-col" style={{ gridColumn: 'span 2', padding: '0', display: 'flex', flexDirection: 'column', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+        
+        {/* Background Brutalist Image */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.3, backgroundImage: 'url(/crypto_receipt_ledger.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }}></div>
 
-        {recentReceipts.length === 0 ? (
-          <div className="card" style={{ padding: '2.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-            <FileText size={36} style={{ color: 'var(--text-muted)' }} />
-            <div>
-              <div className="font-mincho" style={{ fontSize: '1.15rem', fontWeight: 600 }}>No sealed submissions on this device yet</div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginTop: '0.25rem', maxWidth: '480px' }}>
-                Select an active lot from the Tenders registry to formulate your valuation under the client-side Three-Stage Sealing Protocol.
-              </p>
-            </div>
-            <button className="btn btn-primary btn-sm" onClick={() => onSelectBid(auctions[0])}>
-              <span>EXPLORE TENDERS</span>
-              <ArrowRight size={14} />
-            </button>
+        <div style={{ position: 'relative', zIndex: 1, padding: '4rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '2px solid rgba(255,255,255,0.2)', paddingBottom: '1rem', marginBottom: '3rem' }}>
+            <h2 className="font-display" style={{ fontSize: 'clamp(2rem, 4vw, 4rem)', textTransform: 'uppercase', lineHeight: 1 }}>Receipt<br/>Ledger</h2>
+            <span className="eyebrow" style={{ color: 'var(--accent-vermilion)' }}>{recentReceipts.length} RECORDED</span>
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {recentReceipts.map((receipt, index) => {
-              const matchedAuction = auctions.find((a) => a.auctionIdHex === receipt.auctionIdHex);
-              return (
-                <div key={receipt.transactionId || index} className="card" style={{ padding: '1.25rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                        <span className="hanko-seal hanko-seal-sm">済</span>
-                        <span className="badge badge-mint">PROOF VERIFIED</span>
-                        <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          Block Height #{receipt.blockHeight}
-                        </span>
+
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {recentReceipts.length === 0 ? (
+              <div style={{ border: '2px dashed rgba(255,255,255,0.3)', padding: '4rem', textAlign: 'center' }}>
+                <FileText size={48} style={{ color: 'rgba(255,255,255,0.3)', margin: '0 auto 1.5rem' }} />
+                <div className="font-display" style={{ fontSize: '2rem', marginBottom: '1rem', textTransform: 'uppercase' }}>No Submissions</div>
+                <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem', fontSize: '1.2rem' }}>
+                  Zero-knowledge proofs pending.
+                </p>
+                <button className="btn" onClick={() => onSelectBid(auctions[0])} style={{ backgroundColor: '#fff', color: '#000', borderRadius: 0, padding: '1rem 2rem', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                  VIEW TENDERS <ArrowRight size={20} style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {recentReceipts.map((receipt, index) => {
+                  const matchedAuction = auctions.find((a) => a.auctionIdHex === receipt.auctionIdHex);
+                  return (
+                    <div key={receipt.transactionId || index} style={{ border: '2px solid rgba(255,255,255,0.5)', padding: '2rem', backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+                        <span className="badge" style={{ backgroundColor: 'var(--accent-vermilion)', color: '#fff' }}>PROVEN VALID</span>
+                        <span className="eyebrow" style={{ color: 'rgba(255,255,255,0.6)' }}>BLOCK #{receipt.blockHeight}</span>
                       </div>
-                      <h4 className="font-mincho" style={{ fontSize: '1.15rem', fontWeight: 600 }}>
-                        {matchedAuction?.title || 'Sealed Tender Submission'}
+                      <h4 className="font-display" style={{ fontSize: '2rem', marginBottom: '1rem', textTransform: 'uppercase' }}>
+                        {matchedAuction?.title || 'Unknown Submission'}
                       </h4>
-                      <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.4rem', fontSize: '0.78rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                        <div>
-                          <span style={{ color: 'var(--text-muted)' }}>Public Commitment: </span>
-                          <span className="mono" style={{ color: 'var(--accent-matsuba)' }}>
-                            {receipt.commitmentHex.slice(0, 14)}...{receipt.commitmentHex.slice(-8)}
-                          </span>
-                        </div>
-                        <div>
-                          <span style={{ color: 'var(--text-muted)' }}>Nullifier: </span>
-                          <span className="mono" style={{ color: 'var(--accent-cobalt)' }}>
-                            {receipt.nullifierHex.slice(0, 14)}...{receipt.nullifierHex.slice(-8)}
-                          </span>
-                        </div>
+                      <div className="mono" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', wordBreak: 'break-all', marginBottom: '1.5rem', padding: '1rem', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        TX: {receipt.transactionId}
                       </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <button className="btn btn-secondary btn-sm" onClick={() => onViewReceipt(receipt)}>
-                        <FileText size={13} />
-                        <span>VIEW SEALING CERTIFICATE</span>
+                      <button className="btn" onClick={() => onViewReceipt(receipt)} style={{ width: '100%', backgroundColor: '#fff', color: '#000', borderRadius: 0, padding: '1rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        <FileText size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> INSPECT RECEIPT
                       </button>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
-};
+}

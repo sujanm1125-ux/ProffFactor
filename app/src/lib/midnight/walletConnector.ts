@@ -58,22 +58,42 @@ export async function connectInjectedWallet(
   network: MidnightNetwork
 ): Promise<WalletState> {
   try {
-    const api = await wallet.connect(network);
-    let unshieldedAddress = '';
+    const api = await wallet.connect();
     
-    if (typeof api.getUnshieldedAddress === 'function') {
-      unshieldedAddress = await api.getUnshieldedAddress();
-    } else if (typeof api.getShieldedAddresses === 'function') {
-      const addresses = await api.getShieldedAddresses();
-      if (Array.isArray(addresses) && addresses.length > 0) {
-        unshieldedAddress = typeof addresses[0] === 'string' ? addresses[0] : (addresses[0] as any).shieldedAddress || '';
-      } else if (addresses && typeof addresses === 'object' && 'shieldedAddress' in addresses) {
-        unshieldedAddress = addresses.shieldedAddress || '';
+    let resolvedNetwork = network;
+    if (api && typeof api.getConnectionStatus === 'function') {
+      try {
+        const status = await api.getConnectionStatus();
+        if (status && status.networkId && typeof status.networkId === 'string') {
+          const id = status.networkId.toLowerCase();
+          if (id === 'mainnet' || id === 'preprod' || id === 'preview') {
+            resolvedNetwork = id as MidnightNetwork;
+          }
+        }
+      } catch (e) {
+        // ignore
       }
     }
 
-    if (!unshieldedAddress) {
-      unshieldedAddress = `0xmn_${wallet.id.slice(0, 12)}...${network}`;
+    let unshieldedAddress: any = '';
+    
+    if (api && typeof api.getUnshieldedAddress === 'function') {
+      try {
+        unshieldedAddress = await api.getUnshieldedAddress();
+      } catch(e) {}
+    } else if (api && typeof api.getShieldedAddresses === 'function') {
+      try {
+        const addresses = await api.getShieldedAddresses();
+        if (Array.isArray(addresses) && addresses.length > 0) {
+          unshieldedAddress = typeof addresses[0] === 'string' ? addresses[0] : (addresses[0] as any).shieldedAddress || '';
+        } else if (addresses && typeof addresses === 'object' && 'shieldedAddress' in addresses) {
+          unshieldedAddress = (addresses as any).shieldedAddress || '';
+        }
+      } catch(e) {}
+    }
+
+    if (!unshieldedAddress || typeof unshieldedAddress !== 'string' || unshieldedAddress.trim() === '') {
+      unshieldedAddress = `0xmn_${wallet.id.slice(0, 12)}...${resolvedNetwork}`;
     }
 
     return {
@@ -81,8 +101,8 @@ export async function connectInjectedWallet(
       walletId: wallet.id,
       walletName: wallet.name,
       is1AM: wallet.is1AM,
-      unshieldedAddress,
-      network,
+      unshieldedAddress: unshieldedAddress as string,
+      network: resolvedNetwork,
       isDemo: false,
     };
   } catch (err) {
@@ -119,7 +139,7 @@ export function getInitialWalletState(): WalletState {
     walletName: '',
     is1AM: false,
     unshieldedAddress: '',
-    network: 'preprod',
+    network: 'mainnet',
     isDemo: false,
   };
 }

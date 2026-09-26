@@ -4,7 +4,7 @@
 
 export type AuctionCategory = 'procurement' | 'liquidation' | 'otc-block' | 'spectrum-license';
 export type AuctionStatus = 'Open' | 'Closed' | 'Settled' | 'Cancelled';
-export type MidnightNetwork = 'preprod' | 'preview';
+export type MidnightNetwork = 'preprod' | 'preview' | 'mainnet';
 
 export interface Auction {
   id: string;

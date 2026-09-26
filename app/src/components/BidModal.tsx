@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Lock, EyeOff, CheckCircle2, AlertTriangle, ArrowRight, Check } from 'lucide-react';
+import { X, Shield, Lock, AlertTriangle, Check } from 'lucide-react';
 import { Auction, StagedBidWitness, WalletState, FinalizedReceipt } from '../domain/types';
 import {
   generateRandomHex,
@@ -48,7 +48,6 @@ export const BidModal: React.FC<BidModalProps> = ({
   const bidAmount = BigInt(bidAmountStr || '0');
   const isReserveCompliant = bidAmount >= auction.reservePrice;
 
-  // Real-time recomputation of public commitment and nullifier
   useEffect(() => {
     if (identity && saltHex && bidAmount > 0n) {
       computeClientCommitment(auction.auctionIdHex, identity.derivedIdentityHex, bidAmount, saltHex).then(
@@ -66,7 +65,7 @@ export const BidModal: React.FC<BidModalProps> = ({
       return;
     }
     if (!isReserveCompliant) {
-      setErrorMsg('Bid is below the minimum reserve threshold.');
+      setErrorMsg('Bid is below the minimum reserve.');
       return;
     }
 
@@ -88,60 +87,44 @@ export const BidModal: React.FC<BidModalProps> = ({
         onProgress: (_, __, msg) => setProgressMsg(msg),
       });
 
-      // Transmit public receipt metadata to backend
       await postReceiptToBackend(receipt);
-
       onReceiptGenerated(receipt);
       onClose();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Execution failed');
+      setErrorMsg(err instanceof Error ? err.message : 'Submission failed');
       setProgressMsg(null);
     }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content card-bracketed" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', borderBottom: '2px solid var(--border-strong)', paddingBottom: '1rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
-              <span className="hanko-seal">密印</span>
-              <span className="eyebrow">THREE-STAGE CRYPTOGRAPHIC SEALING CEREMONY</span>
-            </div>
-            <h2 className="font-mincho" style={{ fontSize: '1.45rem', fontWeight: 700 }}>
-              Submit Confidential Sealed Bid
+            <span className="eyebrow">SEALED BID SUBMISSION</span>
+            <h2 className="font-display" style={{ fontSize: '2rem' }}>
+              Execution
             </h2>
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={onClose}>
-            <X size={16} />
+          <button className="btn btn-secondary btn-sm" onClick={onClose} style={{ border: 'none' }}>
+            <X size={20} />
           </button>
         </div>
 
-        {/* Auction Lot Summary */}
-        <div style={{ background: 'var(--bg-elevated)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)' }}>
-          <div className="eyebrow" style={{ color: 'var(--accent-shu)', marginBottom: '0.2rem' }}>TARGET PROCUREMENT LOT</div>
-          <div className="font-mincho" style={{ fontWeight: 600, fontSize: '1.05rem' }}>{auction.title}</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.85rem' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>Minimum Reserve Price:</span>
-            <strong className="mono" style={{ color: 'var(--accent-yamabuki)' }}>
-              {auction.reservePrice.toLocaleString()} {auction.currency}
-            </strong>
+        <div style={{ padding: '1.5rem', border: '1px solid var(--border-medium)', marginBottom: '2rem' }}>
+          <div className="eyebrow" style={{ marginBottom: '0.5rem' }}>TARGET LOT</div>
+          <div className="font-display" style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{auction.title}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+            <span className="eyebrow">MINIMUM RESERVE</span>
+            <strong className="mono">{auction.reservePrice.toLocaleString()} {auction.currency}</strong>
           </div>
         </div>
 
-        {/* Phase 01: Private Valuation */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-            <span className="kanji-step">壱</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 01 &bull; Private Valuation Formulation</span>
-            <span className="badge badge-mint" style={{ marginLeft: 'auto' }}>LOCAL MEMORY ONLY</span>
-          </div>
-
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 className="font-display" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>1. Local Valuation</h3>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">
-              Private Bid Valuation ({auction.currency}) — Remains on your physical device
-            </label>
+            <label className="form-label">Bid amount ({auction.currency})</label>
             <input
               type="number"
               className="form-input"
@@ -151,89 +134,65 @@ export const BidModal: React.FC<BidModalProps> = ({
               disabled={progressMsg !== null}
             />
             {!isReserveCompliant ? (
-              <div style={{ color: 'var(--accent-danger)', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <AlertTriangle size={13} />
-                <span>Constraint warning: Bid must meet or exceed minimum reserve ({auction.reservePrice.toLocaleString()} {auction.currency}).</span>
+              <div style={{ color: 'var(--status-danger)', fontSize: '0.85rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={16} /> Constraint: Must meet {auction.reservePrice.toLocaleString()}
               </div>
             ) : (
-              <div style={{ color: 'var(--accent-matsuba)', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Check size={13} />
-                <span>Reserve threshold satisfied (Margin headroom: +{(bidAmount - auction.reservePrice).toLocaleString()} {auction.currency})</span>
+              <div style={{ color: 'var(--status-success)', fontSize: '0.85rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Check size={16} /> Reserve verified locally
               </div>
             )}
           </div>
         </div>
 
-        {/* Phase 02: Cryptographic Sealing */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-            <span className="kanji-step">弐</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 02 &bull; Cryptographic Commitment &amp; Salt</span>
-            <span className="badge badge-shu" style={{ marginLeft: 'auto' }}>PEDERSEN & POSEIDON</span>
-          </div>
-
-          <div style={{ background: 'var(--bg-core)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 className="font-display" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>2. Cryptographic Envelope</h3>
+          <div style={{ border: '1px solid var(--border-medium)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">Public Bid Commitment Anchor (32-Bytes):</div>
-              <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-matsuba)', wordBreak: 'break-all' }}>
-                {commitmentHex || 'Computing commitment...'}
-              </div>
+              <span className="eyebrow">COMMITMENT (32-BYTE)</span>
+              <div className="mono" style={{ marginTop: '0.25rem', wordBreak: 'break-all' }}>{commitmentHex || 'Computing...'}</div>
             </div>
             <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }} className="eyebrow">Anti-Replay Nullifier Digest:</div>
-              <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent-cobalt)', wordBreak: 'break-all' }}>
-                {nullifierHex || 'Computing nullifier...'}
-              </div>
+              <span className="eyebrow">NULLIFIER</span>
+              <div className="mono" style={{ marginTop: '0.25rem', wordBreak: 'break-all' }}>{nullifierHex || 'Computing...'}</div>
             </div>
           </div>
         </div>
 
-        {/* Phase 03: Zero-Knowledge Submission */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-            <span className="kanji-step">参</span>
-            <span className="font-mincho" style={{ fontWeight: 700, fontSize: '1rem' }}>Phase 03 &bull; Midnight Zero-Knowledge Attestation</span>
-            <span className="badge badge-mint" style={{ marginLeft: 'auto' }}>COMPACT 0.31.1</span>
-          </div>
-
-          <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', padding: '0.85rem', background: 'var(--bg-elevated)' }}>
-            <label style={{ display: 'flex', gap: '0.65rem', alignItems: 'flex-start', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={acknowledged}
-                onChange={(e) => setAcknowledged(e.target.checked)}
-                style={{ marginTop: '0.25rem', accentColor: 'var(--accent-shu)' }}
-              />
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                I confirm that my exact valuation of <strong>{bidAmount.toLocaleString()} {auction.currency}</strong> will remain private.
-                Only the zero-knowledge proof of reserve compliance and the 32-byte public commitment will be recorded on the Midnight ledger.
-              </span>
-            </label>
-          </div>
+        <div style={{ marginBottom: '2rem' }}>
+          <label style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', cursor: 'pointer', padding: '1rem', border: '1px solid var(--border-medium)', background: 'var(--bg-elevated)' }}>
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(e) => setAcknowledged(e.target.checked)}
+              style={{ marginTop: '0.25rem' }}
+            />
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              I confirm my valuation of <strong style={{ color: 'var(--text-primary)' }}>{bidAmount.toLocaleString()} {auction.currency}</strong> stays strictly on this device. Only the ZK proof is committed on-chain.
+            </span>
+          </label>
         </div>
 
         {errorMsg && (
-          <div style={{ padding: '0.75rem', background: 'rgba(229, 62, 62, 0.1)', border: '1px solid var(--accent-danger)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', color: 'var(--accent-danger)', fontSize: '0.85rem' }}>
+          <div style={{ padding: '1rem', border: '1px solid var(--status-danger)', color: 'var(--status-danger)', marginBottom: '1.5rem' }}>
             {errorMsg}
           </div>
         )}
 
         {progressMsg && (
-          <div style={{ padding: '0.75rem', background: 'rgba(214, 63, 40, 0.1)', border: '1px solid var(--accent-shu)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', color: 'var(--accent-shu)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span className="animate-spin">⚙</span>
-            <span>{progressMsg}</span>
+          <div style={{ padding: '1rem', border: '1px solid var(--text-primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span className="mono">Running...</span>
+            <span className="font-display">{progressMsg}</span>
           </div>
         )}
 
-        {/* Action Button */}
         <button
           className="btn btn-primary"
-          style={{ width: '100%', padding: '0.85rem' }}
+          style={{ width: '100%', fontSize: '1rem', padding: '1rem' }}
           disabled={!acknowledged || !isReserveCompliant || progressMsg !== null}
           onClick={handleSubmit}
         >
-          <Shield size={16} />
-          <span>{progressMsg ? 'PROVING CIRCUIT...' : 'GENERATE ZK PROOF & SUBMIT BID'}</span>
+          {progressMsg ? 'Proving...' : 'Generate ZK Proof & Submit'}
         </button>
       </div>
     </div>
