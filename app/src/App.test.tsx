@@ -13,6 +13,11 @@ describe('AegisBid Application Shell Tests', () => {
 
   it('switches between tabs cleanly', () => {
     render(<App />);
+    // Switch to Bidder Haven
+    fireEvent.click(screen.getByRole('button', { name: /BIDDER HAVEN/i }));
+    expect(screen.getByText('入札者の私室')).toBeInTheDocument();
+    expect(screen.getByText('机上算定シミュレーター')).toBeInTheDocument();
+
     // Switch to Privacy Matrix
     fireEvent.click(screen.getByRole('button', { name: /PRIVACY MATRIX/i }));
     expect(screen.getByText('Cryptographic Privacy Boundary')).toBeInTheDocument();

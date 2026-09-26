@@ -2,10 +2,12 @@ import React from 'react';
 import { Shield, Radio, Wallet, LogOut, Sparkles, Terminal } from 'lucide-react';
 import { MidnightNetwork, WalletState } from '../domain/types';
 
+export type NavigationTab = 'auctions' | 'bidder' | 'privacy' | 'assistant' | 'metrics';
+
 interface HeaderProps {
   wallet: WalletState;
-  activeTab: 'auctions' | 'privacy' | 'assistant' | 'metrics';
-  onSelectTab: (tab: 'auctions' | 'privacy' | 'assistant' | 'metrics') => void;
+  activeTab: NavigationTab;
+  onSelectTab: (tab: NavigationTab) => void;
   onOpenWalletModal: () => void;
   onDisconnectWallet: () => void;
   onNetworkChange: (network: MidnightNetwork) => void;
@@ -23,10 +25,11 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="header-bar">
       <div className="brand-section">
         <div className="brand-logo">
-          <Shield size={22} className="text-accent-cobalt" />
-          <span>AEGISBID</span>
+          <span className="hanko-seal">密印</span>
+          <span className="font-mincho" style={{ fontWeight: 800 }}>AEGISBID</span>
         </div>
         <span className="brand-tag">ZK-SEALED BID PROTOCOL</span>
+        <span className="hanko-seal hanko-seal-sm">零知識</span>
         <span className="badge badge-mint">
           <Radio size={12} className="animate-pulse" />
           {wallet.network.toUpperCase()}
@@ -39,27 +42,34 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => onSelectTab('auctions')}
         >
           <Terminal size={14} />
-          AUCTIONS
+          <span>01 案件一覧 AUCTIONS</span>
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'bidder' ? 'active' : ''}`}
+          onClick={() => onSelectTab('bidder')}
+        >
+          <Shield size={14} style={{ color: 'var(--accent-shu)' }} />
+          <span>02 入札者私室 BIDDER HAVEN</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
           onClick={() => onSelectTab('privacy')}
         >
           <Shield size={14} />
-          PRIVACY MATRIX
+          <span>03 機密体系 PRIVACY MATRIX</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'assistant' ? 'active' : ''}`}
           onClick={() => onSelectTab('assistant')}
         >
           <Sparkles size={14} />
-          GEMINI ARCHITECT
+          <span>04 知性相談 GEMINI ARCHITECT</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
           onClick={() => onSelectTab('metrics')}
         >
-          METRICS
+          <span>05 検証台帳 METRICS</span>
         </button>
       </nav>
 

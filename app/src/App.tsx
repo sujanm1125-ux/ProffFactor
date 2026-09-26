@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Header } from './components/Header';
+import { Header, NavigationTab } from './components/Header';
 import { AuctionList } from './components/AuctionList';
+import { BidderHaven } from './components/BidderHaven';
 import { PrivacyBoundaryView } from './components/PrivacyBoundaryView';
 import { GeminiAssistantPanel } from './components/GeminiAssistantPanel';
 import { MetricsDashboard } from './components/MetricsDashboard';
@@ -58,11 +59,12 @@ const INITIAL_AUCTIONS: Auction[] = [
 
 export function App() {
   const [wallet, setWallet] = useState<WalletState>(getInitialWalletState());
-  const [activeTab, setActiveTab] = useState<'auctions' | 'privacy' | 'assistant' | 'metrics'>('auctions');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('auctions');
   const [auctions, setAuctions] = useState<Auction[]>(INITIAL_AUCTIONS);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [activeReceipt, setActiveReceipt] = useState<FinalizedReceipt | null>(null);
+  const [recentReceipts, setRecentReceipts] = useState<FinalizedReceipt[]>([]);
 
   const handleNetworkChange = (network: MidnightNetwork) => {
     // Invariant: Reset wallet session when switching networks
@@ -82,6 +84,7 @@ export function App() {
 
   const handleReceiptGenerated = (receipt: FinalizedReceipt) => {
     setActiveReceipt(receipt);
+    setRecentReceipts(prev => [receipt, ...prev]);
     // Increment bids count for the auction in local state
     setAuctions(prev =>
       prev.map(a =>
@@ -106,6 +109,16 @@ export function App() {
           <AuctionList
             auctions={auctions}
             onSelectBid={(auc) => setSelectedAuction(auc)}
+          />
+        )}
+
+        {activeTab === 'bidder' && (
+          <BidderHaven
+            wallet={wallet}
+            auctions={auctions}
+            recentReceipts={recentReceipts}
+            onSelectBid={(auc) => setSelectedAuction(auc)}
+            onViewReceipt={(rec) => setActiveReceipt(rec)}
           />
         )}
 

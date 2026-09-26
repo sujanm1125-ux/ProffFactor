@@ -22,76 +22,89 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) 
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CheckCircle size={22} className="text-accent-mint" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>ZK Proof Receipt</h2>
+      <div className="modal-content card-bracketed" onClick={(e) => e.stopPropagation()}>
+        {/* Certificate Frame */}
+        <div className="certificate-frame">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span className="hanko-seal" style={{ fontSize: '0.9rem', padding: '0.3rem 0.6rem' }}>済印</span>
+              <div>
+                <span className="eyebrow" style={{ color: 'var(--accent-shu)' }}>OFFICIAL CRYPTOGRAPHIC ATTESTATION</span>
+                <h2 className="font-mincho" style={{ fontSize: '1.35rem', fontWeight: 700 }}>
+                  封緘入札完了証明書 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 400 }}>Sealing Certificate</span>
+                </h2>
+              </div>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={onClose}>
+              <X size={16} />
+            </button>
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={onClose}>
-            <X size={16} />
-          </button>
-        </div>
 
-        <div style={{ padding: '0.85rem', background: 'rgba(0, 229, 153, 0.08)', border: '1px solid rgba(0, 229, 153, 0.3)', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-mint)' }}>
-            Zero-Knowledge Verification Confirmed
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            The Compact circuit <code className="mono">submitSealedBid</code> evaluated successfully.
-            Your bid amount was mathematically proven to satisfy reserve criteria without public disclosure.
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', background: 'var(--bg-elevated)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-          <div>
-            <span className="eyebrow">TRANSACTION ID</span>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
-              <span className="mono" style={{ fontSize: '0.8rem', wordBreak: 'break-all' }}>{receipt.transactionId}</span>
-              <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(receipt.transactionId)}>
-                <Copy size={12} />
-              </button>
+          <div style={{ padding: '0.85rem', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-matsuba)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <ShieldCheck size={16} />
+              <span>零知識証明検証完了 (Compact ZK Verified)</span>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.3rem', lineHeight: 1.6 }}>
+              回路 <code className="mono">submitSealedBid</code> の制約（評価額 &ge; 最低予定価格）が数学的に立証されました。
+              入札金額および利益率は外部へ一切露出せず、暗号コミットメントのみが台帳に確定記録されました。
             </div>
           </div>
 
-          <div>
-            <span className="eyebrow">PUBLIC COMMITMENT</span>
-            <div className="mono" style={{ fontSize: '0.8rem', color: 'var(--accent-mint)', wordBreak: 'break-all', marginTop: '0.2rem' }}>
-              {receipt.commitmentHex}
-            </div>
-          </div>
-
-          <div>
-            <span className="eyebrow">NULLIFIER (REPLAY DEFENSE)</span>
-            <div className="mono" style={{ fontSize: '0.8rem', color: 'var(--accent-cobalt)', wordBreak: 'break-all', marginTop: '0.2rem' }}>
-              {receipt.nullifierHex}
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', background: 'var(--bg-core)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <div>
-              <span className="eyebrow">CIRCUIT</span>
-              <div className="mono" style={{ fontSize: '0.8rem' }}>{receipt.circuitName}</div>
+              <span className="eyebrow">取引識別子 (TRANSACTION ID)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
+                <span className="mono" style={{ fontSize: '0.78rem', wordBreak: 'break-all' }}>{receipt.transactionId}</span>
+                <button className="btn btn-secondary btn-sm" onClick={() => copyToClipboard(receipt.transactionId)} title="クリップボードにコピー">
+                  <Copy size={12} />
+                </button>
+              </div>
             </div>
+
             <div>
-              <span className="eyebrow">NETWORK</span>
-              <div className="mono" style={{ fontSize: '0.8rem' }}>{receipt.network.toUpperCase()}</div>
+              <span className="eyebrow">公開封緘コミットメント (PUBLIC COMMITMENT)</span>
+              <div className="mono" style={{ fontSize: '0.78rem', color: 'var(--accent-matsuba)', wordBreak: 'break-all', marginTop: '0.2rem' }}>
+                {receipt.commitmentHex}
+              </div>
             </div>
+
             <div>
-              <span className="eyebrow">BLOCK HEIGHT</span>
-              <div className="mono" style={{ fontSize: '0.8rem' }}>#{receipt.blockHeight}</div>
+              <span className="eyebrow">二重提出防止無効子 (ANTI-REPLAY NULLIFIER)</span>
+              <div className="mono" style={{ fontSize: '0.78rem', color: 'var(--accent-cobalt)', wordBreak: 'break-all', marginTop: '0.2rem' }}>
+                {receipt.nullifierHex}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+              <div>
+                <span className="eyebrow">検証回路 (CIRCUIT)</span>
+                <div className="mono" style={{ fontSize: '0.78rem' }}>{receipt.circuitName}</div>
+              </div>
+              <div>
+                <span className="eyebrow">台帳網 (NETWORK)</span>
+                <div className="mono" style={{ fontSize: '0.78rem' }}>{receipt.network.toUpperCase()}</div>
+              </div>
+              <div>
+                <span className="eyebrow">記録ブロック (HEIGHT)</span>
+                <div className="mono" style={{ fontSize: '0.78rem' }}>#{receipt.blockHeight}</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={handleDownload}>
-            <Download size={15} />
-            DOWNLOAD RECEIPT (.JSON)
-          </button>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>
-            CONTINUE
-          </button>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem', textAlign: 'center', lineHeight: 1.6 }}>
+            ※ 本証明書（JSON控帳）は開札フェーズにおける落札検証に必要となります。ローカルに保存してください。
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button className="btn btn-secondary" style={{ flex: 1 }} onClick={handleDownload}>
+              <Download size={15} />
+              <span>証明書出力 DOWNLOAD (.JSON)</span>
+            </button>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>
+              <span>閉じる CLOSE</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
